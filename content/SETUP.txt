@@ -1,0 +1,63 @@
+GlycemicLife — Post-Deploy Setup Checklist
+==========================================
+
+After the code is on the server (via cPanel Git Deploy), do these once,
+in WP Admin. Total time: ~15 minutes.
+
+1) Activate the theme + plugin
+   - Appearance → Themes → activate "GlycemicLife".
+   - Plugins → activate "NutriGL Tools".
+
+2) Permalinks (critical for SEO)
+   - Settings → Permalinks → "Post name" → Save.
+
+3) Import the pages
+   For each file in content/pages/*.html:
+   - Pages → Add New.
+   - Copy the Title and Slug from the comment block at the top of the file.
+   - Switch to Code editor (⋮ top-right menu → "Code editor").
+   - Paste everything BELOW the HTML comment block.
+   - For calculator.html and gi-database.html, set Page Attributes →
+     Template → "Full-width Tool".
+   - Publish.
+
+4) Import the 3 posts
+   For each file in content/posts/*.html:
+   - Posts → Add New.
+   - Copy Title, Slug, Category, Tags, and Excerpt from the comment block.
+   - Categories: create "Guides", "Foods", "Meals" as you go.
+   - Switch to Code editor, paste content below the comment block.
+   - Add a Featured Image (upload from Unsplash — search for the alt text
+     hint at the top of each file).
+   - Publish.
+
+5) Wire up the site settings
+   - Settings → General → Site Title: "GlycemicLife"
+     Tagline: "Master Glycemic Load. Stabilize blood sugar. Effortless fat loss."
+   - Settings → Reading → "A static page":
+       Homepage: Home
+       Posts page: create a blank Page called "Blog" (slug: blog) and select it.
+   - Settings → Privacy → Privacy Policy page: Privacy Policy.
+
+6) Menus
+   - Appearance → Menus → Create menu "Primary":
+       Home | GL Calculator | GI Database | Blog | About
+       Assign to "Primary Menu".
+   - Create menu "Footer":
+       About | Contact | Privacy Policy
+       Assign to "Footer Menu".
+
+7) SEO essentials (do once, after content is up)
+   - Install "Rank Math" or "Yoast SEO" plugin.
+     (Optional — the theme already outputs canonical, meta, OG, JSON-LD;
+      an SEO plugin adds a sitemap and per-post title control.)
+   - Submit the sitemap in Google Search Console.
+   - Set up a free Google Analytics 4 property + Search Console.
+
+8) Verify the CTA funnel
+   - Open any published post on the front-end.
+   - Confirm the black CTA banner appears mid-article and again at the
+     bottom, both linking to nutriglinsight.com (with utm_source=glycemiclife).
+
+That's it. The site is now a self-contained SEO funnel:
+  Google → article → calculator/database → NutriGL Insight app.
