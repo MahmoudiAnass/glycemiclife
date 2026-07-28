@@ -1,0 +1,16 @@
+# WordPress config (contains DB credentials & secret keys)
+wp-config.php
+
+# Uploaded media (usually not versioned)
+wp-content/uploads/
+
+# Cache / backup / logs
+wp-content/cache/
+wp-content/backup*/
+wp-content/upgrade/
+*.log
+
+# OS / editor files
+.DS_Store
+Thumbs.db
+.vscode/
