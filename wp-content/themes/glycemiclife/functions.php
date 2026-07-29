@@ -9,10 +9,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'GLYCEMICLIFE_VERSION', '2.3.0' );
+define( 'GLYCEMICLIFE_VERSION', '2.3.1' );
 define( 'GLYCEMICLIFE_DIR', get_template_directory() );
 define( 'GLYCEMICLIFE_URI', get_template_directory_uri() );
-define( 'GLYCEMICLIFE_APP_URL', 'https://nutriglinsight.com' );
+define( 'GLYCEMICLIFE_APP_URL', 'https://play.google.com/store/apps/details?id=com.oushen.NutriGLInsight' );
 
 /**
  * Theme setup.

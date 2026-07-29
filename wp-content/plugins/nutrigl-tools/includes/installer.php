@@ -285,7 +285,6 @@ function nutrigl_installer_build_menus( $pages ) {
 			array( 'label' => 'Meal Builder',   'slug' => 'meal-builder' ),
 			array( 'label' => 'Food Database',  'slug' => 'gi-database' ),
 			array( 'label' => 'Articles',       'slug' => 'blog' ),
-			array( 'label' => 'About',          'slug' => 'about' ),
 		);
 		foreach ( $primary_items as $it ) {
 			if ( empty( $pages[ $it['slug'] ] ) ) {

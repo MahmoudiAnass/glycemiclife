@@ -44,7 +44,17 @@
 
 		<div class="header-actions">
 			<?php echo do_shortcode( '[nutrigl_account]' ); ?>
-			<a class="header-cta" href="<?php echo esc_url( GLYCEMICLIFE_APP_URL . '?utm_source=glycemiclife&utm_medium=header&utm_campaign=gl_funnel' ); ?>" rel="noopener" target="_blank">
+			<?php
+			$header_app_url = add_query_arg(
+				array(
+					'utm_source'   => 'glycemiclife',
+					'utm_medium'   => 'header',
+					'utm_campaign' => 'gl_funnel',
+				),
+				GLYCEMICLIFE_APP_URL
+			);
+			?>
+			<a class="header-cta" href="<?php echo esc_url( $header_app_url ); ?>" rel="noopener" target="_blank">
 				Get the App
 			</a>
 		</div>
@@ -62,6 +72,5 @@ function glycemiclife_default_menu() {
 	echo '<li><a href="' . esc_url( home_url( '/meal-builder/' ) ) . '">Meal Builder</a></li>';
 	echo '<li><a href="' . esc_url( home_url( '/gi-database/' ) ) . '">Food Database</a></li>';
 	echo '<li><a href="' . esc_url( home_url( '/blog/' ) ) . '">Articles</a></li>';
-	echo '<li><a href="' . esc_url( home_url( '/about/' ) ) . '">About</a></li>';
 	echo '</ul>';
 }

@@ -15,7 +15,17 @@
 				<h3>Glycemic<span style="color:var(--brand-500)">Life</span></h3>
 			</div>
 			<p class="site-footer__tag">Evidence-based Glycemic Load education. Free tools, honest science, one goal: stable blood sugar.</p>
-			<a class="btn btn--accent" href="<?php echo esc_url( GLYCEMICLIFE_APP_URL . '?utm_source=glycemiclife&utm_medium=footer&utm_campaign=gl_funnel' ); ?>" rel="noopener" target="_blank">
+			<?php
+			$footer_app_url = add_query_arg(
+				array(
+					'utm_source'   => 'glycemiclife',
+					'utm_medium'   => 'footer',
+					'utm_campaign' => 'gl_funnel',
+				),
+				GLYCEMICLIFE_APP_URL
+			);
+			?>
+			<a class="btn btn--accent" href="<?php echo esc_url( $footer_app_url ); ?>" rel="noopener" target="_blank">
 				Download NutriGL Insight →
 			</a>
 		</div>
