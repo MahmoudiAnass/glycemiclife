@@ -29,6 +29,7 @@ require_once NUTRIGL_TOOLS_DIR . 'includes/rest.php';
 
 if ( is_admin() ) {
 	require_once NUTRIGL_TOOLS_DIR . 'includes/admin.php';
+	require_once NUTRIGL_TOOLS_DIR . 'includes/installer.php';
 }
 
 register_activation_hook( __FILE__, 'nutrigl_tools_install_tables' );

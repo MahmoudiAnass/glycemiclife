@@ -128,6 +128,8 @@ function nutrigl_tools_admin_page() {
 		<p>For extra safety, define the key as a PHP constant instead of storing it in the database:</p>
 		<pre style="background:#0b1e3a;color:#e6edf7;padding:14px 16px;border-radius:8px;overflow:auto;"><code>define( 'NUTRIGL_API_KEY', 'your-key-here' );</code></pre>
 		<p>The constant overrides the option above. An environment variable named <code>NUTRIGL_API_KEY</code> (e.g. set in cPanel &rarr; Setup Node.js/PHP App or via <code>.htaccess</code>) overrides both.</p>
+
+		<?php if ( function_exists( 'nutrigl_installer_render' ) ) { nutrigl_installer_render(); } ?>
 	</div>
 	<?php
 }
