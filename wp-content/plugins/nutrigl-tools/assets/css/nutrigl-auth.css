@@ -43,11 +43,12 @@
 	border-radius: 999px;
 	border: 0;
 	cursor: pointer;
-	background: #22c55e;
-	color: #06231a;
-	transition: transform .15s, background .15s;
+	background: linear-gradient(135deg, #ff8a3d, #f2661e);
+	color: #fff;
+	transition: transform .15s, box-shadow .15s;
+	box-shadow: 0 4px 12px rgba(242,102,30,.35);
 }
-.nutrigl-badge__btn:hover { background: #16a34a; transform: translateY(-1px); }
+.nutrigl-badge__btn:hover { box-shadow: 0 6px 16px rgba(242,102,30,.45); transform: translateY(-1px); }
 .nutrigl-badge__btn--ghost {
 	background: transparent;
 	color: #e6edf7;
@@ -118,16 +119,6 @@
 /* -----------------------------------------------
  * Calculator field / button additions
  * ----------------------------------------------- */
-.gl-calc__grid {
-	display: grid;
-	grid-template-columns: 2fr 1fr auto;
-	gap: 14px;
-	align-items: end;
-}
-@media (max-width: 720px) {
-	.gl-calc__grid { grid-template-columns: 1fr; }
-}
-.gl-field--btn label { visibility: hidden; }
 .btn--sm {
 	font-size: 13px;
 	padding: 8px 14px;
@@ -240,9 +231,9 @@
 }
 .nutrigl-form input:focus {
 	outline: none;
-	border-color: #22c55e;
+	border-color: #f2661e;
 	background: #fff;
-	box-shadow: 0 0 0 3px rgba(34,197,94,0.15);
+	box-shadow: 0 0 0 3px rgba(242,102,30,0.15);
 }
 .nutrigl-form__msg {
 	min-height: 18px;

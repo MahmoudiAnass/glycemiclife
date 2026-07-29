@@ -10,7 +10,10 @@
 <footer class="site-footer" role="contentinfo">
 	<div class="site-footer__inner">
 		<div class="site-footer__brand">
-			<h3>Glycemic<span style="color:var(--green-500)">Life</span></h3>
+			<div class="site-footer__logo">
+				<img src="<?php echo esc_url( get_template_directory_uri() . '/assets/images/logo.png' ); ?>" alt="GlycemicLife" width="36" height="36">
+				<h3>Glycemic<span style="color:var(--brand-500)">Life</span></h3>
+			</div>
 			<p class="site-footer__tag">Evidence-based Glycemic Load education. Free tools, honest science, one goal: stable blood sugar.</p>
 			<a class="btn btn--accent" href="<?php echo esc_url( GLYCEMICLIFE_APP_URL . '?utm_source=glycemiclife&utm_medium=footer&utm_campaign=gl_funnel' ); ?>" rel="noopener" target="_blank">
 				Download NutriGL Insight →

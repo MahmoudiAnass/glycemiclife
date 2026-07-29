@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'GLYCEMICLIFE_VERSION', '2.2.0' );
+define( 'GLYCEMICLIFE_VERSION', '2.3.0' );
 define( 'GLYCEMICLIFE_DIR', get_template_directory() );
 define( 'GLYCEMICLIFE_URI', get_template_directory_uri() );
 define( 'GLYCEMICLIFE_APP_URL', 'https://nutriglinsight.com' );
@@ -44,6 +44,19 @@ function glycemiclife_setup() {
 	);
 }
 add_action( 'after_setup_theme', 'glycemiclife_setup' );
+
+/**
+ * Fallback favicon (GlycemicLife logo) when no Site Icon is set in Customizer.
+ */
+function glycemiclife_favicon_fallback() {
+	if ( has_site_icon() ) {
+		return;
+	}
+	$logo = GLYCEMICLIFE_URI . '/assets/images/logo.png';
+	echo '<link rel="icon" href="' . esc_url( $logo ) . '" sizes="192x192">' . "\n";
+	echo '<link rel="apple-touch-icon" href="' . esc_url( $logo ) . '">' . "\n";
+}
+add_action( 'wp_head', 'glycemiclife_favicon_fallback' );
 
 /**
  * Enqueue assets. Google Fonts (Inter), one CSS file, deferred JS.

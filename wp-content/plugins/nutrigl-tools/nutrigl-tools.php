@@ -3,7 +3,7 @@
  * Plugin Name: NutriGL Tools
  * Plugin URI:  https://nutriglinsight.com
  * Description: Interactive Glycemic Load calculator + food database + custom visitor auth with strict 1-free / 3-with-signup daily quota.
- * Version:     2.1.0
+ * Version:     2.1.1
  * Author:      NutriGL Insight
  * Author URI:  https://nutriglinsight.com
  * License:     GPL v2 or later
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'NUTRIGL_TOOLS_VERSION', '2.1.0' );
+define( 'NUTRIGL_TOOLS_VERSION', '2.1.1' );
 define( 'NUTRIGL_TOOLS_FILE', __FILE__ );
 define( 'NUTRIGL_TOOLS_DIR', plugin_dir_path( __FILE__ ) );
 define( 'NUTRIGL_TOOLS_URL', plugin_dir_url( __FILE__ ) );

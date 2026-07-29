@@ -21,8 +21,8 @@
 			<?php if ( has_custom_logo() ) : ?>
 				<?php the_custom_logo(); ?>
 			<?php else : ?>
-				<a class="site-title" href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home">
-					<span class="site-title__mark">GL</span>
+				<a class="site-title site-logo" href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home">
+					<img class="site-logo__img" src="<?php echo esc_url( get_template_directory_uri() . '/assets/images/logo.png' ); ?>" alt="GlycemicLife" width="40" height="40">
 					<span class="site-title__text">Glycemic<em>Life</em></span>
 				</a>
 			<?php endif; ?>
