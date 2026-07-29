@@ -1,6 +1,6 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/anaseatf/public_html/
+    - export DEPLOYPATH=/home/anaseatf/glycemiclife.com/
     - /bin/mkdir -p $DEPLOYPATH
     - /bin/cp -R * $DEPLOYPATH
