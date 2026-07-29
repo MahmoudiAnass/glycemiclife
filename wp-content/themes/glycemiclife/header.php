@@ -58,8 +58,9 @@
  */
 function glycemiclife_default_menu() {
 	echo '<ul class="primary-nav__list">';
-	echo '<li><a href="' . esc_url( home_url( '/gi-database/' ) ) . '">Food Database</a></li>';
 	echo '<li><a href="' . esc_url( home_url( '/calculator/' ) ) . '">GL Calculator</a></li>';
+	echo '<li><a href="' . esc_url( home_url( '/meal-builder/' ) ) . '">Meal Builder</a></li>';
+	echo '<li><a href="' . esc_url( home_url( '/gi-database/' ) ) . '">Food Database</a></li>';
 	echo '<li><a href="' . esc_url( home_url( '/blog/' ) ) . '">Articles</a></li>';
 	echo '<li><a href="' . esc_url( home_url( '/about/' ) ) . '">About</a></li>';
 	echo '</ul>';

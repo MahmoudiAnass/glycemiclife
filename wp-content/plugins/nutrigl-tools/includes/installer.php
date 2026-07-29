@@ -280,11 +280,12 @@ function nutrigl_installer_build_menus( $pages ) {
 	}
 	if ( ! is_wp_error( $menu_id ) && $menu_id ) {
 		$primary_items = array(
-			array( 'label' => 'Home',         'slug' => 'home' ),
-			array( 'label' => 'GL Calculator', 'slug' => 'calculator' ),
-			array( 'label' => 'Food Database', 'slug' => 'gi-database' ),
-			array( 'label' => 'Articles',      'slug' => 'blog' ),
-			array( 'label' => 'About',         'slug' => 'about' ),
+			array( 'label' => 'Home',          'slug' => 'home' ),
+			array( 'label' => 'GL Calculator',  'slug' => 'calculator' ),
+			array( 'label' => 'Meal Builder',   'slug' => 'meal-builder' ),
+			array( 'label' => 'Food Database',  'slug' => 'gi-database' ),
+			array( 'label' => 'Articles',       'slug' => 'blog' ),
+			array( 'label' => 'About',          'slug' => 'about' ),
 		);
 		foreach ( $primary_items as $it ) {
 			if ( empty( $pages[ $it['slug'] ] ) ) {

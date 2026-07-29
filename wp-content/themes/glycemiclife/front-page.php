@@ -47,6 +47,12 @@ get_header(); ?>
 			<p class="feature-card__body">Search &amp; filter 100+ foods by GI, GL, and category.</p>
 			<span class="feature-card__more">Browse foods →</span>
 		</a>
+		<a class="feature-card" href="<?php echo esc_url( home_url( '/meal-builder/' ) ); ?>">
+			<div class="feature-card__icon feature-card__icon--purple">🍽️</div>
+			<h3 class="feature-card__title">Meal Builder</h3>
+			<p class="feature-card__body">Combine foods to see a whole meal's total Glycemic Load. Free with signup.</p>
+			<span class="feature-card__more">Build a meal →</span>
+		</a>
 		<a class="feature-card" href="<?php echo esc_url( home_url( '/blog/' ) ); ?>">
 			<div class="feature-card__icon feature-card__icon--amber">📖</div>
 			<h3 class="feature-card__title">Deep-dive Guides</h3>

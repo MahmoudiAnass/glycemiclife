@@ -1,0 +1,95 @@
+/* NutriGL Tools — Meal Builder styles. */
+
+.meal-builder {
+	max-width: 960px;
+	margin: 0 auto;
+}
+.meal-builder__head { text-align: center; margin-bottom: 26px; }
+
+/* Logged-out gate */
+.meal-gate {
+	background: linear-gradient(160deg, var(--navy-900, #0b1e3a), var(--navy-700, #143563));
+	border-radius: 24px;
+	padding: 48px 32px;
+	text-align: center;
+	color: #fff;
+	box-shadow: 0 20px 50px rgba(11,30,58,.25);
+}
+.meal-gate__icon {
+	width: 64px; height: 64px; margin: 0 auto 16px;
+	display: grid; place-items: center; font-size: 1.8rem;
+	background: rgba(255,255,255,.1); border-radius: 18px;
+}
+.meal-gate h3 { color: #fff; margin: 0 0 8px; font-size: 1.4rem; }
+.meal-gate p { color: rgba(255,255,255,.75); margin: 0 auto 22px; max-width: 44ch; }
+.meal-gate__actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+/* Builder app */
+.meal-app__grid {
+	display: grid; grid-template-columns: 1.3fr 1fr; gap: 26px; align-items: start;
+	margin-bottom: 34px;
+}
+@media (max-width: 780px) { .meal-app__grid { grid-template-columns: 1fr; } }
+
+.meal-app__form {
+	background: var(--surface, #fff); border: 1px solid var(--border, #e2e8f0);
+	border-radius: var(--radius-lg, 20px); padding: 26px;
+	box-shadow: var(--shadow-sm, 0 1px 2px rgba(15,23,42,.06));
+	display: flex; flex-direction: column; gap: 14px;
+}
+.meal-app__summary { display: flex; flex-direction: column; gap: 18px; }
+
+.meal-items {
+	list-style: none; margin: 4px 0 0; padding: 0;
+	display: flex; flex-direction: column; gap: 8px;
+	max-height: 320px; overflow-y: auto;
+}
+.meal-item {
+	display: grid; grid-template-columns: 1fr auto auto auto; align-items: center; gap: 10px;
+	background: var(--surface-2, #f1f4f9); border-radius: 10px; padding: 10px 12px;
+	font-size: .9rem;
+}
+.meal-item__name { font-weight: 700; color: var(--navy-900, #0b1e3a); }
+.meal-item__grams { color: var(--muted, #64748b); font-variant-numeric: tabular-nums; }
+.meal-item__gl {
+	font-weight: 800; color: var(--navy-900, #0b1e3a);
+	background: #fff; border-radius: 999px; padding: 3px 10px; font-size: .82rem;
+}
+.meal-item__remove {
+	width: 26px; height: 26px; border-radius: 50%; border: 0;
+	background: rgba(239,68,68,.12); color: #b91c1c; font-size: 1.1rem; line-height: 1;
+	cursor: pointer; transition: background .15s;
+}
+.meal-item__remove:hover { background: rgba(239,68,68,.22); }
+
+.meal-save { margin-top: 4px; }
+.meal-save .btn { margin-top: 10px; }
+
+/* Saved meals */
+.meal-saved__title { margin: 0 0 14px; font-size: 1.2rem; }
+.meal-saved__list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+.meal-saved__empty { color: var(--muted, #64748b); }
+
+.meal-card {
+	background: var(--surface, #fff); border: 1px solid var(--border, #e2e8f0);
+	border-radius: var(--radius, 12px); padding: 18px;
+	box-shadow: var(--shadow-sm, 0 1px 2px rgba(15,23,42,.06));
+	display: flex; flex-direction: column; gap: 8px;
+}
+.meal-card__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.meal-card__head h4 { margin: 0; font-size: 1.02rem; color: var(--navy-900, #0b1e3a); }
+.meal-card__pill {
+	flex-shrink: 0; padding: 3px 10px; border-radius: 999px;
+	font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em;
+}
+.meal-card__pill--low  { background: var(--green-100, #dcfce7); color: var(--green-700, #15803d); }
+.meal-card__pill--med  { background: var(--amber-100, #fef3c7); color: var(--amber-700, #b45309); }
+.meal-card__pill--high { background: var(--red-100, #fee2e2); color: var(--red-700, #b91c1c); }
+.meal-card__meta { margin: 0; font-size: .82rem; color: var(--muted, #64748b); }
+.meal-card__items { margin: 0; font-size: .82rem; color: var(--muted-2, #94a3b8); }
+.meal-card__delete {
+	align-self: flex-start; margin-top: 4px;
+	font-family: inherit; font-size: .78rem; font-weight: 700;
+	background: transparent; border: 0; color: #b91c1c; cursor: pointer; padding: 0;
+}
+.meal-card__delete:hover { text-decoration: underline; }

@@ -50,9 +50,34 @@ function nutrigl_tools_install_tables() {
 		UNIQUE KEY scope_day (scope, scope_key, day_key)
 	) $charset;";
 
+	$meals = "CREATE TABLE {$wpdb->prefix}nutrigl_meals (
+		id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+		user_id BIGINT UNSIGNED NOT NULL,
+		name VARCHAR(120) NOT NULL,
+		created_at DATETIME NOT NULL,
+		updated_at DATETIME NOT NULL,
+		PRIMARY KEY  (id),
+		KEY user_id (user_id)
+	) $charset;";
+
+	$meal_items = "CREATE TABLE {$wpdb->prefix}nutrigl_meal_items (
+		id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+		meal_id BIGINT UNSIGNED NOT NULL,
+		food_name VARCHAR(120) NOT NULL,
+		grams DECIMAL(8,2) NOT NULL,
+		gi DECIMAL(6,2) NOT NULL,
+		carbs DECIMAL(8,2) NOT NULL,
+		gl DECIMAL(8,2) NOT NULL,
+		sort_order INT NOT NULL DEFAULT 0,
+		PRIMARY KEY  (id),
+		KEY meal_id (meal_id)
+	) $charset;";
+
 	dbDelta( $users );
 	dbDelta( $sessions );
 	dbDelta( $usage );
+	dbDelta( $meals );
+	dbDelta( $meal_items );
 }
 
 /**

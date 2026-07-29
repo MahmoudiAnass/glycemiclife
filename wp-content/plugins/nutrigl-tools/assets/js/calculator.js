@@ -1,4 +1,4 @@
-/* NutriGL Tools — Calculator v2 (calls WP proxy → Heroku API). */
+/* NutriGL Tools — Calculator v3 (quick chips + SVG gauge, calls WP proxy). */
 (function () {
 	'use strict';
 
@@ -7,30 +7,48 @@
 		else document.addEventListener('DOMContentLoaded', fn);
 	}
 
+	var GAUGE_CIRCUMFERENCE = 326.7256; // 2 * PI * 52
+	var GAUGE_MAX_GL = 40; // GL value that fills the ring 100%.
+
+	var TIERS = {
+		low:  { color: '#86efac', label: 'Low GL',    tip: 'Minimal blood-sugar impact — a solid choice.' },
+		med:  { color: '#fcd34d', label: 'Medium GL', tip: 'Moderate impact — fine paired with protein or fiber.' },
+		high: { color: '#fca5a5', label: 'High GL',   tip: 'Big spike expected. Cut the portion or add fiber, protein, or fat.' }
+	};
+
 	function tierFromCategory(cat) {
 		var c = (cat || '').toLowerCase();
-		if (c === 'low') return { cls: 'low', label: 'Low GL', tip: 'Minimal blood-sugar impact — a solid choice.' };
-		if (c === 'high') return { cls: 'high', label: 'High GL', tip: 'Big spike expected. Cut the portion or add fiber, protein, or fat.' };
-		return { cls: 'med', label: 'Medium GL', tip: 'Moderate impact — fine paired with protein or fiber.' };
+		if (c === 'low') return TIERS.low;
+		if (c === 'high') return TIERS.high;
+		return TIERS.med;
 	}
 
 	ready(function () {
 		var $wrap  = document.getElementById('gl-calculator');
 		if (!$wrap) return;
 
-		var $food  = document.getElementById('glc-food');
-		var $grams = document.getElementById('glc-grams');
-		var $btn   = document.getElementById('glc-run');
-		var $outGI = document.getElementById('glc-out-gi');
-		var $outC  = document.getElementById('glc-out-carbs');
-		var $outGL = document.getElementById('glc-out-gl');
-		var $hint  = document.getElementById('glc-hint');
+		var $food     = document.getElementById('glc-food');
+		var $grams    = document.getElementById('glc-grams');
+		var $btn      = document.getElementById('glc-run');
+		var $btnLabel = document.getElementById('glc-run-label');
+		var $outGI    = document.getElementById('glc-out-gi');
+		var $outC     = document.getElementById('glc-out-carbs');
+		var $outGL    = document.getElementById('glc-out-gl');
+		var $gaugeFill = document.getElementById('glc-gauge-fill');
+		var $hint     = document.getElementById('glc-hint');
 
 		var $qBar  = document.getElementById('glc-quota-fill');
 		var $qTxt  = document.getElementById('glc-quota-text');
 		var $qCTA  = document.getElementById('glc-quota-cta');
 
 		if (!$food || !$grams || !$btn) return;
+
+		function setGauge(gl, color) {
+			var pct = gl == null ? 0 : Math.max(0, Math.min(1, gl / GAUGE_MAX_GL));
+			var offset = GAUGE_CIRCUMFERENCE * (1 - pct);
+			$gaugeFill.style.strokeDashoffset = String(offset);
+			$gaugeFill.style.stroke = color || '#86efac';
+		}
 
 		function paintQuota(state) {
 			var q    = state && state.quota;
@@ -59,19 +77,20 @@
 		}
 
 		function paintResult(r) {
+			var tier = tierFromCategory(r.category);
 			$outGI.textContent = r.gi == null ? '—' : Math.round(r.gi);
 			$outC.textContent  = r.carbs_for_serving == null ? '—' : (Math.round(r.carbs_for_serving * 10) / 10) + ' g';
-			$outGL.textContent = r.glycemic_load == null ? '—' : (Math.round(r.glycemic_load * 10) / 10);
-			var tier = tierFromCategory(r.category);
-			$outGL.className = 'gl-result__value gl-result__value--' + tier.cls;
-			$hint.textContent = tier.label + ' — ' + tier.tip + '   Formula: GL = GI × carbs ÷ 100.';
+			var gl = r.glycemic_load == null ? null : Math.round(r.glycemic_load * 10) / 10;
+			$outGL.textContent = gl == null ? '—' : gl;
+			setGauge(gl, tier.color);
+			$hint.textContent = tier.label + ' — ' + tier.tip + '  Formula: GL = GI × carbs ÷ 100.';
 		}
 
 		function paintError(msg) {
 			$outGI.textContent = '—';
 			$outC.textContent  = '—';
 			$outGL.textContent = '—';
-			$outGL.className   = 'gl-result__value';
+			setGauge(null, '#86efac');
 			$hint.textContent  = msg;
 		}
 
@@ -91,16 +110,15 @@
 				return;
 			}
 
-			var origLabel = $btn.textContent;
 			$btn.disabled = true;
-			$btn.textContent = 'Calculating…';
+			$btnLabel.textContent = 'Calculating…';
 			$hint.textContent = 'Calculating…';
 
 			window.NutriGLAuth.api('gl-check', {
 				method: 'POST',
 				body: { food: food, grams: g, fingerprint: window.NutriGLAuth.fingerprint() }
 			}).then(function (r) {
-				$btn.textContent = origLabel;
+				$btnLabel.textContent = 'Calculate';
 				if (!r.ok) {
 					var q = r.body && r.body.quota;
 					if (q) window.NutriGLAuth.set({ quota: q });
@@ -116,7 +134,7 @@
 				paintResult(r.body.result);
 			}).catch(function () {
 				$btn.disabled = false;
-				$btn.textContent = origLabel;
+				$btnLabel.textContent = 'Calculate';
 				paintError('Network error. Try again.');
 			});
 		}
@@ -124,6 +142,13 @@
 		$btn.addEventListener('click', calc);
 		$food.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); calc(); } });
 		$grams.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); calc(); } });
+
+		$wrap.querySelectorAll('.gl-chip').forEach(function (chip) {
+			chip.addEventListener('click', function () {
+				$food.value = chip.getAttribute('data-food') || '';
+				calc();
+			});
+		});
 
 		if (window.NutriGLAuth) {
 			window.NutriGLAuth.subscribe(paintQuota);

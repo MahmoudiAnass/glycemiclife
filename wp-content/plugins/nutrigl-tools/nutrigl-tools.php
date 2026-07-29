@@ -3,7 +3,7 @@
  * Plugin Name: NutriGL Tools
  * Plugin URI:  https://nutriglinsight.com
  * Description: Interactive Glycemic Load calculator + food database + custom visitor auth with strict 1-free / 3-with-signup daily quota.
- * Version:     2.0.0
+ * Version:     2.1.0
  * Author:      NutriGL Insight
  * Author URI:  https://nutriglinsight.com
  * License:     GPL v2 or later
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'NUTRIGL_TOOLS_VERSION', '2.0.0' );
+define( 'NUTRIGL_TOOLS_VERSION', '2.1.0' );
 define( 'NUTRIGL_TOOLS_FILE', __FILE__ );
 define( 'NUTRIGL_TOOLS_DIR', plugin_dir_path( __FILE__ ) );
 define( 'NUTRIGL_TOOLS_URL', plugin_dir_url( __FILE__ ) );
@@ -26,6 +26,7 @@ define( 'NUTRIGL_TOOLS_URL', plugin_dir_url( __FILE__ ) );
 require_once NUTRIGL_TOOLS_DIR . 'includes/auth.php';
 require_once NUTRIGL_TOOLS_DIR . 'includes/quota.php';
 require_once NUTRIGL_TOOLS_DIR . 'includes/rest.php';
+require_once NUTRIGL_TOOLS_DIR . 'includes/meals.php';
 
 if ( is_admin() ) {
 	require_once NUTRIGL_TOOLS_DIR . 'includes/admin.php';
@@ -162,7 +163,8 @@ function nutrigl_tools_enqueue_assets() {
 	}
 	$has_calc = has_shortcode( $post->post_content, 'gl_calculator' );
 	$has_db   = has_shortcode( $post->post_content, 'gl_database' );
-	if ( ! $has_calc && ! $has_db ) {
+	$has_meal = has_shortcode( $post->post_content, 'meal_builder' );
+	if ( ! $has_calc && ! $has_db && ! $has_meal ) {
 		return;
 	}
 
@@ -189,6 +191,21 @@ function nutrigl_tools_enqueue_assets() {
 			'nutrigl-tools-database',
 			NUTRIGL_TOOLS_URL . 'assets/js/database.js',
 			array( 'nutrigl-tools-data' ),
+			NUTRIGL_TOOLS_VERSION,
+			array( 'strategy' => 'defer', 'in_footer' => true )
+		);
+	}
+	if ( $has_meal ) {
+		wp_enqueue_style(
+			'nutrigl-tools-meal-builder',
+			NUTRIGL_TOOLS_URL . 'assets/css/meal-builder.css',
+			array(),
+			NUTRIGL_TOOLS_VERSION
+		);
+		wp_enqueue_script(
+			'nutrigl-tools-meal-builder',
+			NUTRIGL_TOOLS_URL . 'assets/js/meal-builder.js',
+			array( 'nutrigl-tools-auth', 'nutrigl-tools-data' ),
 			NUTRIGL_TOOLS_VERSION,
 			array( 'strategy' => 'defer', 'in_footer' => true )
 		);
@@ -298,48 +315,73 @@ function nutrigl_tools_calculator_shortcode( $atts ) {
 	}
 	ksort( $names );
 
+	$quick_picks = array( 'Banana', 'White rice', 'Watermelon', 'Rolled oats', 'Sweet potato', 'Chickpeas' );
+
 	ob_start();
 	?>
 	<section class="gl-calc" id="gl-calculator">
-		<h2 class="gl-calc__title"><?php echo esc_html( $atts['title'] ); ?></h2>
-		<p class="gl-calc__sub"><?php echo esc_html( $atts['subtitle'] ); ?></p>
-
-		<div class="gl-calc__grid">
-			<div class="gl-field">
-				<label for="glc-food">Food</label>
-				<input id="glc-food" class="gl-input" type="text" list="glc-food-list" placeholder="e.g. banana, brown rice, watermelon" maxlength="60" autocomplete="off" spellcheck="false">
-				<datalist id="glc-food-list">
-					<?php foreach ( $names as $name ) : ?>
-						<option value="<?php echo esc_attr( $name ); ?>"></option>
-					<?php endforeach; ?>
-				</datalist>
-			</div>
-
-			<div class="gl-field">
-				<label for="glc-grams">Serving (grams)</label>
-				<input id="glc-grams" class="gl-input" type="number" min="1" max="2000" step="1" value="100" inputmode="numeric">
-			</div>
-
-			<div class="gl-field gl-field--btn">
-				<label for="glc-run">&nbsp;</label>
-				<button type="button" id="glc-run" class="btn btn--primary btn--block">Calculate</button>
-			</div>
+		<div class="gl-calc__head">
+			<span class="gl-calc__eyebrow">&#9889; Live blood-sugar lookup</span>
+			<h2 class="gl-calc__title"><?php echo esc_html( $atts['title'] ); ?></h2>
+			<p class="gl-calc__sub"><?php echo esc_html( $atts['subtitle'] ); ?></p>
 		</div>
 
-		<div class="gl-result" role="status" aria-live="polite">
-			<div class="gl-result__cell">
-				<span class="gl-result__label">Glycemic Index</span>
-				<span id="glc-out-gi" class="gl-result__value">&mdash;</span>
+		<div class="gl-chips">
+			<span class="gl-chips__label">Try:</span>
+			<?php foreach ( $quick_picks as $qp ) : ?>
+				<button type="button" class="gl-chip" data-food="<?php echo esc_attr( $qp ); ?>">
+					<?php echo esc_html( nutrigl_tools_food_emoji( $qp ) . ' ' . $qp ); ?>
+				</button>
+			<?php endforeach; ?>
+		</div>
+
+		<div class="gl-calc__body">
+			<div class="gl-calc__form">
+				<div class="gl-field">
+					<label for="glc-food">Food</label>
+					<input id="glc-food" class="gl-input" type="text" list="glc-food-list" placeholder="e.g. banana, brown rice, watermelon" maxlength="60" autocomplete="off" spellcheck="false">
+					<datalist id="glc-food-list">
+						<?php foreach ( $names as $name ) : ?>
+							<option value="<?php echo esc_attr( $name ); ?>"></option>
+						<?php endforeach; ?>
+					</datalist>
+				</div>
+
+				<div class="gl-field">
+					<label for="glc-grams">Serving (grams)</label>
+					<input id="glc-grams" class="gl-input" type="number" min="1" max="2000" step="1" value="100" inputmode="numeric">
+				</div>
+
+				<button type="button" id="glc-run" class="btn btn--primary gl-calc__submit">
+					<span id="glc-run-label">Calculate</span>
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="m13 5 7 7-7 7"></path></svg>
+				</button>
+
+				<p id="glc-hint" class="gl-calc__hint">Type a food and grams, then hit Calculate.</p>
 			</div>
-			<div class="gl-result__cell">
-				<span class="gl-result__label">Carbs (serving)</span>
-				<span id="glc-out-carbs" class="gl-result__value">&mdash;</span>
+
+			<div class="gl-result" role="status" aria-live="polite">
+				<div class="gl-gauge" id="glc-gauge">
+					<svg viewBox="0 0 120 120" class="gl-gauge__ring" aria-hidden="true">
+						<circle class="gl-gauge__track" cx="60" cy="60" r="52"></circle>
+						<circle class="gl-gauge__fill" id="glc-gauge-fill" cx="60" cy="60" r="52"></circle>
+					</svg>
+					<div class="gl-gauge__center">
+						<span id="glc-out-gl" class="gl-gauge__value">&mdash;</span>
+						<span class="gl-gauge__unit">Glycemic Load</span>
+					</div>
+				</div>
+				<div class="gl-result__stats">
+					<div class="gl-result__stat">
+						<span class="gl-result__stat-label">Glycemic Index</span>
+						<strong id="glc-out-gi" class="gl-result__stat-value">&mdash;</strong>
+					</div>
+					<div class="gl-result__stat">
+						<span class="gl-result__stat-label">Carbs (serving)</span>
+						<strong id="glc-out-carbs" class="gl-result__stat-value">&mdash;</strong>
+					</div>
+				</div>
 			</div>
-			<div class="gl-result__cell">
-				<span class="gl-result__label">Glycemic Load</span>
-				<span id="glc-out-gl" class="gl-result__value">&mdash;</span>
-			</div>
-			<p id="glc-hint" class="gl-result__hint">Type a food and grams, then hit Calculate.</p>
 		</div>
 
 		<div class="gl-quota" id="glc-quota">
@@ -352,6 +394,7 @@ function nutrigl_tools_calculator_shortcode( $atts ) {
 	return trim( ob_get_clean() );
 }
 add_shortcode( 'gl_calculator', 'nutrigl_tools_calculator_shortcode' );
+
 
 /**
  * Shortcode: [gl_database]
@@ -484,3 +527,120 @@ function nutrigl_tools_database_shortcode( $atts ) {
 	return trim( ob_get_clean() );
 }
 add_shortcode( 'gl_database', 'nutrigl_tools_database_shortcode' );
+
+/**
+ * Shortcode: [meal_builder]
+ *
+ * A perk for signed-up users: combine multiple foods (from the trusted
+ * local dataset) with a serving size each, and see the combined Glycemic
+ * Load for the whole meal. Saved meals persist per user via the
+ * /wp-json/nutrigl/v1/meals REST endpoints. Logged-out visitors see a
+ * sign-up/log-in gate instead of the builder.
+ */
+function nutrigl_tools_meal_builder_shortcode( $atts ) {
+	$atts = shortcode_atts(
+		array(
+			'title'    => 'Build a Meal',
+			'subtitle' => 'Combine foods to see the total Glycemic Load of a full meal — a free perk once you sign up.',
+		),
+		$atts,
+		'meal_builder'
+	);
+
+	$foods = nutrigl_tools_get_foods();
+	$names = array();
+	foreach ( $foods as $f ) {
+		if ( ! empty( $f['name'] ) ) {
+			$names[ strtolower( $f['name'] ) ] = $f['name'];
+		}
+	}
+	ksort( $names );
+
+	ob_start();
+	?>
+	<section class="meal-builder" id="meal-builder">
+		<div class="meal-builder__head">
+			<span class="gl-calc__eyebrow">&#127869;&#65039; Members-only tool</span>
+			<h2 class="gl-calc__title"><?php echo esc_html( $atts['title'] ); ?></h2>
+			<p class="gl-calc__sub"><?php echo esc_html( $atts['subtitle'] ); ?></p>
+		</div>
+
+		<div class="meal-gate" id="meal-gate" hidden>
+			<div class="meal-gate__icon" aria-hidden="true">&#128274;</div>
+			<h3>Sign up free to build meals</h3>
+			<p>Creating an account also gives you 3 calculator checks a day instead of 1.</p>
+			<div class="meal-gate__actions">
+				<button type="button" class="btn btn--primary" data-nutrigl-open="signup">Sign up free</button>
+				<button type="button" class="btn btn--ghost" data-nutrigl-open="login">Log in</button>
+			</div>
+		</div>
+
+		<div class="meal-app" id="meal-app" hidden>
+			<div class="meal-app__grid">
+				<div class="meal-app__form">
+					<div class="gl-field">
+						<label for="meal-food">Add a food</label>
+						<input id="meal-food" class="gl-input" type="text" list="meal-food-list" placeholder="e.g. brown rice" maxlength="60" autocomplete="off" spellcheck="false">
+						<datalist id="meal-food-list">
+							<?php foreach ( $names as $name ) : ?>
+								<option value="<?php echo esc_attr( $name ); ?>"></option>
+							<?php endforeach; ?>
+						</datalist>
+					</div>
+					<div class="gl-field">
+						<label for="meal-grams">Grams</label>
+						<input id="meal-grams" class="gl-input" type="number" min="1" max="2000" step="1" value="100" inputmode="numeric">
+					</div>
+					<button type="button" id="meal-add" class="btn btn--primary gl-calc__submit">
+						<span>Add to meal</span>
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+					</button>
+					<p id="meal-msg" class="gl-calc__hint" role="alert"></p>
+
+					<ul class="meal-items" id="meal-items" aria-live="polite"></ul>
+				</div>
+
+				<div class="meal-app__summary">
+					<div class="gl-result">
+						<div class="gl-gauge" id="meal-gauge">
+							<svg viewBox="0 0 120 120" class="gl-gauge__ring" aria-hidden="true">
+								<circle class="gl-gauge__track" cx="60" cy="60" r="52"></circle>
+								<circle class="gl-gauge__fill" id="meal-gauge-fill" cx="60" cy="60" r="52"></circle>
+							</svg>
+							<div class="gl-gauge__center">
+								<span id="meal-total-gl" class="gl-gauge__value">0</span>
+								<span class="gl-gauge__unit">Total GL</span>
+							</div>
+						</div>
+						<div class="gl-result__stats">
+							<div class="gl-result__stat">
+								<span class="gl-result__stat-label">Items</span>
+								<strong id="meal-total-items" class="gl-result__stat-value">0</strong>
+							</div>
+							<div class="gl-result__stat">
+								<span class="gl-result__stat-label">Carbs</span>
+								<strong id="meal-total-carbs" class="gl-result__stat-value">0 g</strong>
+							</div>
+						</div>
+					</div>
+
+					<div class="gl-field meal-save">
+						<label for="meal-name">Meal name</label>
+						<input id="meal-name" class="gl-input" type="text" maxlength="120" placeholder="e.g. Sunday breakfast">
+						<button type="button" id="meal-save" class="btn btn--accent btn--block">Save meal</button>
+					</div>
+				</div>
+			</div>
+
+			<div class="meal-saved">
+				<h3 class="meal-saved__title">Your saved meals</h3>
+				<div class="meal-saved__list" id="meal-saved-list">
+					<p class="meal-saved__empty">No saved meals yet — build one above.</p>
+				</div>
+			</div>
+		</div>
+	</section>
+	<?php
+	return trim( ob_get_clean() );
+}
+add_shortcode( 'meal_builder', 'nutrigl_tools_meal_builder_shortcode' );
