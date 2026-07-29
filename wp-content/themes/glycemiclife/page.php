@@ -1,6 +1,6 @@
 <?php
 /**
- * Standard page template.
+ * Standard page.
  *
  * @package GlycemicLife
  */
@@ -8,11 +8,11 @@
 get_header(); ?>
 
 <?php while ( have_posts() ) : the_post(); ?>
-<article <?php post_class( 'container static-page' ); ?>>
-	<header class="static-page__header">
-		<h1 class="static-page__title"><?php the_title(); ?></h1>
+<article <?php post_class( 'static-page' ); ?>>
+	<header>
+		<h1 style="margin-top:0;"><?php the_title(); ?></h1>
 	</header>
-	<div class="static-page__content">
+	<div>
 		<?php the_content(); ?>
 	</div>
 </article>

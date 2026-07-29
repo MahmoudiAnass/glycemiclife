@@ -2,8 +2,8 @@
 /**
  * Plugin Name: NutriGL Tools
  * Plugin URI:  https://nutriglinsight.com
- * Description: Interactive Glycemic Load calculator and searchable GI/GL food database, delivered as WordPress shortcodes. Fast (no jQuery), accessible, SEO-friendly.
- * Version:     1.0.0
+ * Description: Interactive Glycemic Load calculator and searchable GI/GL food database as shortcodes.
+ * Version:     1.1.0
  * Author:      NutriGL Insight
  * Author URI:  https://nutriglinsight.com
  * License:     GPL v2 or later
@@ -18,13 +18,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'NUTRIGL_TOOLS_VERSION', '1.0.0' );
+define( 'NUTRIGL_TOOLS_VERSION', '1.1.0' );
 define( 'NUTRIGL_TOOLS_FILE', __FILE__ );
 define( 'NUTRIGL_TOOLS_DIR', plugin_dir_path( __FILE__ ) );
 define( 'NUTRIGL_TOOLS_URL', plugin_dir_url( __FILE__ ) );
 
 /**
- * Load foods once. Cached in memory per request.
+ * Load foods once (cached per request).
  *
  * @return array<int, array<string, mixed>>
  */
@@ -38,10 +38,70 @@ function nutrigl_tools_get_foods() {
 		$foods = array();
 		return $foods;
 	}
-	$raw   = file_get_contents( $file ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+	$raw     = file_get_contents( $file ); // phpcs:ignore WordPress.WP.AlternativeFunctions
 	$decoded = json_decode( $raw, true );
-	$foods = is_array( $decoded ) ? $decoded : array();
+	$foods   = is_array( $decoded ) ? $decoded : array();
 	return $foods;
+}
+
+/**
+ * Map a food name to an emoji. Falls back to category icon, then generic.
+ *
+ * @param string $name Food name.
+ * @param string $cat  Category.
+ * @return string Single emoji.
+ */
+function nutrigl_tools_food_emoji( $name, $cat = '' ) {
+	$n = strtolower( $name );
+	$map = array(
+		'apple' => '🍎', 'banana' => '🍌', 'orange' => '🍊', 'grape' => '🍇',
+		'watermelon' => '🍉', 'mango' => '🥭', 'pineapple' => '🍍',
+		'strawberr' => '🍓', 'blueberr' => '🫐', 'cherr' => '🍒',
+		'pear' => '🍐', 'peach' => '🍑', 'plum' => '🫐', 'kiwi' => '🥝',
+		'papaya' => '🍈', 'apricot' => '🍑', 'date' => '🌴', 'raisin' => '🍇',
+		'prune' => '🍑', 'grapefruit' => '🍊', 'cantaloupe' => '🍈',
+		'lemon' => '🍋', 'avocado' => '🥑',
+		'potato' => '🥔', 'fries' => '🍟', 'sweet potato' => '🍠',
+		'carrot' => '🥕', 'corn' => '🌽', 'peas' => '🫛',
+		'broccoli' => '🥦', 'cauliflower' => '🥬', 'spinach' => '🥬',
+		'tomato' => '🍅', 'cucumber' => '🥒', 'pepper' => '🫑',
+		'pumpkin' => '🎃', 'beetroot' => '🍠', 'onion' => '🧅',
+		'bread' => '🍞', 'sourdough' => '🥖', 'rye' => '🍞',
+		'pita' => '🫓', 'tortilla' => '🌯',
+		'rice' => '🍚', 'quinoa' => '🌾', 'oat' => '🥣', 'muesli' => '🥣',
+		'cornflake' => '🥣', 'barley' => '🌾', 'bulgur' => '🌾', 'couscous' => '🍚',
+		'pasta' => '🍝', 'noodle' => '🍜',
+		'lentil' => '🫘', 'chickpea' => '🫘', 'bean' => '🫘',
+		'hummus' => '🥙', 'tofu' => '🍢', 'edamame' => '🫛',
+		'milk' => '🥛', 'yogurt' => '🥛', 'cheese' => '🧀',
+		'ice cream' => '🍦', 'chocolate' => '🍫',
+		'honey' => '🍯', 'sugar' => '🍬',
+		'popcorn' => '🍿', 'chip' => '🍟', 'pretzel' => '🥨',
+		'biscuit' => '🍪', 'cookie' => '🍪', 'doughnut' => '🍩',
+		'cake' => '🍰', 'muffin' => '🧁', 'granola' => '🌾',
+		'juice' => '🧃', 'cola' => '🥤', 'sports' => '🥤', 'coffee' => '☕',
+		'peanut' => '🥜', 'cashew' => '🌰', 'almond' => '🌰', 'walnut' => '🌰',
+		'pizza' => '🍕', 'sushi' => '🍣', 'falafel' => '🥙',
+	);
+
+	foreach ( $map as $needle => $emoji ) {
+		if ( false !== strpos( $n, $needle ) ) {
+			return $emoji;
+		}
+	}
+
+	$cat_map = array(
+		'Fruits'          => '🍎',
+		'Vegetables'      => '🥕',
+		'Bread & Grains'  => '🍞',
+		'Legumes'         => '🫘',
+		'Dairy'           => '🥛',
+		'Sweets & Snacks' => '🍪',
+		'Beverages'       => '🥤',
+		'Nuts & Seeds'    => '🌰',
+		'Mixed Meals'     => '🍽️',
+	);
+	return isset( $cat_map[ $cat ] ) ? $cat_map[ $cat ] : '🥗';
 }
 
 /**
@@ -61,7 +121,6 @@ function nutrigl_tools_maybe_enqueue() {
 		return;
 	}
 
-	// Inline food dataset (avoids extra HTTP request; already tiny once gzipped).
 	$foods = nutrigl_tools_get_foods();
 	wp_register_script( 'nutrigl-tools-data', '', array(), NUTRIGL_TOOLS_VERSION, true );
 	wp_enqueue_script( 'nutrigl-tools-data' );
@@ -77,10 +136,7 @@ function nutrigl_tools_maybe_enqueue() {
 			NUTRIGL_TOOLS_URL . 'assets/js/calculator.js',
 			array( 'nutrigl-tools-data' ),
 			NUTRIGL_TOOLS_VERSION,
-			array(
-				'strategy'  => 'defer',
-				'in_footer' => true,
-			)
+			array( 'strategy' => 'defer', 'in_footer' => true )
 		);
 	}
 	if ( $has_db ) {
@@ -89,14 +145,25 @@ function nutrigl_tools_maybe_enqueue() {
 			NUTRIGL_TOOLS_URL . 'assets/js/database.js',
 			array( 'nutrigl-tools-data' ),
 			NUTRIGL_TOOLS_VERSION,
-			array(
-				'strategy'  => 'defer',
-				'in_footer' => true,
-			)
+			array( 'strategy' => 'defer', 'in_footer' => true )
 		);
 	}
 }
 add_action( 'wp_enqueue_scripts', 'nutrigl_tools_maybe_enqueue' );
+
+/**
+ * GL classification helpers.
+ */
+function nutrigl_tools_gi_tier( $gi ) {
+	if ( $gi < 55 ) return 'low';
+	if ( $gi < 70 ) return 'med';
+	return 'high';
+}
+function nutrigl_tools_gl_tier( $gl ) {
+	if ( $gl < 10 ) return 'low';
+	if ( $gl < 20 ) return 'med';
+	return 'high';
+}
 
 /**
  * Shortcode: [gl_calculator]
@@ -105,7 +172,7 @@ function nutrigl_tools_calculator_shortcode( $atts ) {
 	$atts = shortcode_atts(
 		array(
 			'title'    => 'Glycemic Load Calculator',
-			'subtitle' => 'Pick a food, enter the amount in grams, and see the Glycemic Load instantly.',
+			'subtitle' => 'Pick a food, enter grams, get an instant Glycemic Load score.',
 		),
 		$atts,
 		'gl_calculator'
@@ -115,44 +182,38 @@ function nutrigl_tools_calculator_shortcode( $atts ) {
 
 	ob_start();
 	?>
-	<section class="gl-tool gl-tool--calculator" id="gl-calculator" itemscope itemtype="https://schema.org/WebApplication">
-		<meta itemprop="name" content="Glycemic Load Calculator">
-		<meta itemprop="applicationCategory" content="HealthApplication">
-		<meta itemprop="operatingSystem" content="Web">
-		<meta itemprop="url" content="<?php echo esc_url( home_url( '/calculator/' ) ); ?>">
+	<section class="gl-calc" id="gl-calculator">
+		<h2 class="gl-calc__title"><?php echo esc_html( $atts['title'] ); ?></h2>
+		<p class="gl-calc__sub"><?php echo esc_html( $atts['subtitle'] ); ?></p>
 
-		<h2 class="gl-tool__title"><?php echo esc_html( $atts['title'] ); ?></h2>
-		<p class="gl-tool__sub"><?php echo esc_html( $atts['subtitle'] ); ?></p>
-
-		<div class="gl-field">
-			<label for="glc-food">Food</label>
-			<select id="glc-food" class="gl-select" aria-describedby="glc-food-help">
-				<option value="">— Choose a food —</option>
-				<?php
-				$grouped = array();
-				foreach ( $foods as $idx => $f ) {
-					$cat = isset( $f['category'] ) ? $f['category'] : 'Other';
-					$grouped[ $cat ][] = array( 'idx' => $idx, 'food' => $f );
-				}
-				ksort( $grouped );
-				foreach ( $grouped as $cat => $items ) {
-					echo '<optgroup label="' . esc_attr( $cat ) . '">';
-					foreach ( $items as $i ) {
-						$f = $i['food'];
-						echo '<option value="' . (int) $i['idx'] . '" data-gi="' . esc_attr( $f['gi'] ) . '" data-carbs="' . esc_attr( $f['carbs_per_100g'] ) . '">';
-						echo esc_html( $f['name'] );
-						echo '</option>';
+		<div class="gl-calc__grid">
+			<div class="gl-field">
+				<label for="glc-food">Food</label>
+				<select id="glc-food" class="gl-select">
+					<option value="">— Choose a food —</option>
+					<?php
+					$grouped = array();
+					foreach ( $foods as $idx => $f ) {
+						$cat = isset( $f['category'] ) ? $f['category'] : 'Other';
+						$grouped[ $cat ][] = array( 'idx' => $idx, 'food' => $f );
 					}
-					echo '</optgroup>';
-				}
-				?>
-			</select>
-			<small id="glc-food-help" class="screen-reader-text">Choose a food from the list.</small>
-		</div>
+					ksort( $grouped );
+					foreach ( $grouped as $cat => $items ) {
+						echo '<optgroup label="' . esc_attr( $cat ) . '">';
+						foreach ( $items as $i ) {
+							$f = $i['food'];
+							echo '<option value="' . (int) $i['idx'] . '">' . esc_html( $f['name'] ) . '</option>';
+						}
+						echo '</optgroup>';
+					}
+					?>
+				</select>
+			</div>
 
-		<div class="gl-field">
-			<label for="glc-grams">Serving size (grams)</label>
-			<input id="glc-grams" class="gl-input" type="number" min="1" max="2000" step="1" value="100" inputmode="numeric">
+			<div class="gl-field">
+				<label for="glc-grams">Serving (grams)</label>
+				<input id="glc-grams" class="gl-input" type="number" min="1" max="2000" step="1" value="100" inputmode="numeric">
+			</div>
 		</div>
 
 		<div class="gl-result" role="status" aria-live="polite">
@@ -182,8 +243,8 @@ add_shortcode( 'gl_calculator', 'nutrigl_tools_calculator_shortcode' );
 function nutrigl_tools_database_shortcode( $atts ) {
 	$atts = shortcode_atts(
 		array(
-			'title'    => 'GI &amp; GL Database — 100 Common Foods',
-			'subtitle' => 'Search or filter by category. Sort by Glycemic Index or Glycemic Load per typical serving.',
+			'title'    => '',
+			'subtitle' => '',
 		),
 		$atts,
 		'gl_database'
@@ -202,54 +263,106 @@ function nutrigl_tools_database_shortcode( $atts ) {
 
 	ob_start();
 	?>
-	<section class="gl-tool gl-tool--database" id="gl-database">
-		<h2 class="gl-tool__title"><?php echo wp_kses_post( $atts['title'] ); ?></h2>
-		<p class="gl-tool__sub"><?php echo esc_html( $atts['subtitle'] ); ?></p>
+	<section class="gl-db" id="gl-database">
+		<?php if ( $atts['title'] ) : ?><h2 class="gl-calc__title" style="text-align:center;margin-bottom:8px;"><?php echo wp_kses_post( $atts['title'] ); ?></h2><?php endif; ?>
+		<?php if ( $atts['subtitle'] ) : ?><p class="gl-calc__sub" style="text-align:center;margin-bottom:32px;"><?php echo esc_html( $atts['subtitle'] ); ?></p><?php endif; ?>
 
-		<div class="gl-db__controls">
-			<input id="gldb-search" class="gl-input" type="search" placeholder="Search foods (e.g. banana, rice, oats)…" aria-label="Search foods">
-			<select id="gldb-cat" class="gl-select" aria-label="Filter by category">
-				<option value="">All categories</option>
-				<?php foreach ( array_keys( $categories ) as $cat ) : ?>
-					<option value="<?php echo esc_attr( $cat ); ?>"><?php echo esc_html( $cat ); ?></option>
-				<?php endforeach; ?>
-			</select>
-		</div>
+		<div class="with-sidebar">
+			<aside class="sidebar" aria-label="Filter foods">
+				<div class="sidebar__group">
+					<p class="sidebar__title">Glycemic Index</p>
+					<ul class="sidebar__list">
+						<li><label><input type="checkbox" data-filter="gi" value="low"><span class="dot dot--low"></span>Low (&lt; 55)</label></li>
+						<li><label><input type="checkbox" data-filter="gi" value="med"><span class="dot dot--med"></span>Medium (55–69)</label></li>
+						<li><label><input type="checkbox" data-filter="gi" value="high"><span class="dot dot--high"></span>High (70+)</label></li>
+					</ul>
+				</div>
+				<div class="sidebar__group">
+					<p class="sidebar__title">Glycemic Load</p>
+					<ul class="sidebar__list">
+						<li><label><input type="checkbox" data-filter="gl" value="low"><span class="dot dot--low"></span>Low (&lt; 10)</label></li>
+						<li><label><input type="checkbox" data-filter="gl" value="med"><span class="dot dot--med"></span>Medium (10–19)</label></li>
+						<li><label><input type="checkbox" data-filter="gl" value="high"><span class="dot dot--high"></span>High (20+)</label></li>
+					</ul>
+				</div>
+				<div class="sidebar__group">
+					<p class="sidebar__title">Category</p>
+					<ul class="sidebar__list">
+						<?php foreach ( array_keys( $categories ) as $cat ) : ?>
+							<li><label><input type="checkbox" data-filter="cat" value="<?php echo esc_attr( $cat ); ?>"><?php echo esc_html( $cat ); ?></label></li>
+						<?php endforeach; ?>
+					</ul>
+				</div>
+				<button class="sidebar__clear" type="button" id="gldb-clear">Clear all filters</button>
+			</aside>
 
-		<div class="gl-db__table-wrap">
-			<table class="gl-db__table" aria-describedby="gldb-stats">
-				<thead>
-					<tr>
-						<th data-sort="name"    aria-sort="ascending" scope="col">Food</th>
-						<th data-sort="cat"     scope="col">Category</th>
-						<th data-sort="gi"      scope="col" class="gl-num">GI</th>
-						<th data-sort="serving" scope="col">Serving</th>
-						<th data-sort="gl"      scope="col" class="gl-num">GL / serving</th>
-					</tr>
-				</thead>
-				<tbody id="gldb-body">
-					<!-- Populated by JS. Server-side fallback below for SEO / no-JS. -->
+			<div>
+				<div class="gl-db__topbar">
+					<div class="gl-db__search">
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+							<circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path>
+						</svg>
+						<input id="gldb-search" type="search" placeholder="Search foods (banana, rice, oats…)" aria-label="Search foods">
+					</div>
+					<select id="gldb-sort" class="gl-db__sort" aria-label="Sort by">
+						<option value="name-asc">Sort: Name (A–Z)</option>
+						<option value="gl-asc">Sort: GL (low → high)</option>
+						<option value="gl-desc">Sort: GL (high → low)</option>
+						<option value="gi-asc">Sort: GI (low → high)</option>
+						<option value="gi-desc">Sort: GI (high → low)</option>
+					</select>
+				</div>
+
+				<p id="gldb-stats" class="gl-db__stats" aria-live="polite"><?php echo count( $foods ); ?> foods.</p>
+
+				<div class="food-grid" id="gldb-grid">
 					<?php foreach ( $foods as $f ) :
-						$gl = round( ( (float) $f['gi'] * (float) $f['serving_carbs'] ) / 100, 1 );
-						$gl_class = $gl < 10 ? 'low' : ( $gl < 20 ? 'med' : 'high' );
-						$gi_class = $f['gi'] < 55 ? 'low' : ( $f['gi'] < 70 ? 'med' : 'high' );
+						$gl       = round( ( (float) $f['gi'] * (float) $f['serving_carbs'] ) / 100, 1 );
+						$gi_tier  = nutrigl_tools_gi_tier( (int) $f['gi'] );
+						$gl_tier  = nutrigl_tools_gl_tier( $gl );
+						$emoji    = nutrigl_tools_food_emoji( $f['name'], $f['category'] );
 						?>
-						<tr data-name="<?php echo esc_attr( strtolower( $f['name'] ) ); ?>"
+						<article class="food-card"
+							data-name="<?php echo esc_attr( strtolower( $f['name'] ) ); ?>"
 							data-cat="<?php echo esc_attr( $f['category'] ); ?>"
 							data-gi="<?php echo esc_attr( $f['gi'] ); ?>"
 							data-gl="<?php echo esc_attr( $gl ); ?>"
-							data-serving-g="<?php echo esc_attr( $f['serving_g'] ); ?>">
-							<td><?php echo esc_html( $f['name'] ); ?></td>
-							<td><?php echo esc_html( $f['category'] ); ?></td>
-							<td class="gl-num"><span class="gl-badge gl-badge--<?php echo esc_attr( $gi_class ); ?>"><?php echo (int) $f['gi']; ?></span></td>
-							<td><?php echo esc_html( $f['serving_g'] ); ?> g</td>
-							<td class="gl-num"><span class="gl-badge gl-badge--<?php echo esc_attr( $gl_class ); ?>"><?php echo esc_html( $gl ); ?></span></td>
-						</tr>
+							data-gi-tier="<?php echo esc_attr( $gi_tier ); ?>"
+							data-gl-tier="<?php echo esc_attr( $gl_tier ); ?>">
+							<span class="food-card__pill food-card__pill--<?php echo esc_attr( $gl_tier ); ?>">
+								<?php echo $gl_tier === 'low' ? 'Low GL' : ( $gl_tier === 'med' ? 'Medium GL' : 'High GL' ); ?>
+							</span>
+							<div class="food-card__head">
+								<div class="food-card__emoji" aria-hidden="true"><?php echo esc_html( $emoji ); ?></div>
+								<div>
+									<h3 class="food-card__name"><?php echo esc_html( $f['name'] ); ?></h3>
+									<p class="food-card__cat"><?php echo esc_html( $f['category'] ); ?> · <?php echo (int) $f['serving_g']; ?> g</p>
+								</div>
+							</div>
+							<div class="food-card__stats">
+								<div class="food-card__stat food-card__stat--gi">
+									<span>GI</span>
+									<strong class="<?php echo esc_attr( $gi_tier ); ?>"><?php echo (int) $f['gi']; ?></strong>
+								</div>
+								<div class="food-card__stat">
+									<span>Carbs</span>
+									<strong><?php echo (int) $f['serving_carbs']; ?>g</strong>
+								</div>
+								<div class="food-card__stat food-card__stat--gl">
+									<span>GL</span>
+									<strong class="<?php echo esc_attr( $gl_tier ); ?>"><?php echo esc_html( $gl ); ?></strong>
+								</div>
+							</div>
+						</article>
 					<?php endforeach; ?>
-				</tbody>
-			</table>
+				</div>
+
+				<div class="food-empty" id="gldb-empty" style="display:none;">
+					<p>No foods match those filters.</p>
+					<p><button class="btn btn--ghost" type="button" onclick="document.getElementById('gldb-clear').click();">Clear filters</button></p>
+				</div>
+			</div>
 		</div>
-		<p id="gldb-stats" class="gl-db__stats" aria-live="polite"><?php echo count( $foods ); ?> foods listed.</p>
 	</section>
 	<?php
 	return trim( ob_get_clean() );

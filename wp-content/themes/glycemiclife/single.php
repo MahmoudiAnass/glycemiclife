@@ -8,20 +8,21 @@
 get_header(); ?>
 
 <?php while ( have_posts() ) : the_post(); ?>
-<article <?php post_class( 'container single-post' ); ?>>
-	<header class="single-post__header">
+<article <?php post_class( 'single-post' ); ?>>
+	<header>
 		<?php
 		$cats = get_the_category();
-		if ( $cats ) :
-			?>
-			<p class="single-post__cat"><a href="<?php echo esc_url( get_category_link( $cats[0]->term_id ) ); ?>"><?php echo esc_html( $cats[0]->name ); ?></a></p>
+		if ( $cats ) : ?>
+			<a class="single-post__cat" href="<?php echo esc_url( get_category_link( $cats[0]->term_id ) ); ?>">
+				<?php echo esc_html( $cats[0]->name ); ?>
+			</a>
 		<?php endif; ?>
 		<h1 class="single-post__title"><?php the_title(); ?></h1>
 		<p class="single-post__meta">
 			<span>By <?php the_author(); ?></span>
-			<span aria-hidden="true"> · </span>
+			<span>·</span>
 			<time datetime="<?php echo esc_attr( get_the_date( 'c' ) ); ?>"><?php echo esc_html( get_the_date() ); ?></time>
-			<span aria-hidden="true"> · </span>
+			<span>·</span>
 			<span><?php echo esc_html( glycemiclife_reading_time() ); ?></span>
 		</p>
 	</header>
@@ -36,7 +37,7 @@ get_header(); ?>
 		<?php the_content(); ?>
 	</div>
 
-	<footer class="single-post__footer">
+	<footer>
 		<?php echo glycemiclife_cta_html( array( 'variant' => 'banner' ) ); ?>
 	</footer>
 </article>

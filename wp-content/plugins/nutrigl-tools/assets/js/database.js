@@ -1,82 +1,83 @@
-/* NutriGL Tools — Database (vanilla JS, filter + sort). */
+/* NutriGL Tools — Database (checkboxes + search + sort). */
 (function () {
 	'use strict';
 
 	var $search = document.getElementById('gldb-search');
-	var $cat    = document.getElementById('gldb-cat');
-	var $body   = document.getElementById('gldb-body');
+	var $sort   = document.getElementById('gldb-sort');
+	var $grid   = document.getElementById('gldb-grid');
 	var $stats  = document.getElementById('gldb-stats');
-	var $ths    = document.querySelectorAll('.gl-db__table thead th[data-sort]');
-	if (!$body) return;
+	var $empty  = document.getElementById('gldb-empty');
+	var $clear  = document.getElementById('gldb-clear');
+	var $filters = document.querySelectorAll('input[type="checkbox"][data-filter]');
+	if (!$grid) return;
 
-	var rows = Array.prototype.slice.call($body.querySelectorAll('tr'));
-	var totalCount = rows.length;
-	var sortState = { key: 'name', dir: 'asc' };
+	var cards = Array.prototype.slice.call($grid.querySelectorAll('.food-card'));
+	var total = cards.length;
+
+	function activeSet(name) {
+		var out = {};
+		document.querySelectorAll('input[type="checkbox"][data-filter="' + name + '"]:checked').forEach(function (el) {
+			out[el.value] = true;
+		});
+		return out;
+	}
 
 	function apply() {
-		var q  = ($search && $search.value || '').trim().toLowerCase();
-		var c  = ($cat && $cat.value || '');
+		var q     = ($search && $search.value || '').trim().toLowerCase();
+		var gis   = activeSet('gi');
+		var gls   = activeSet('gl');
+		var cats  = activeSet('cat');
+		var anyGi = Object.keys(gis).length > 0;
+		var anyGl = Object.keys(gls).length > 0;
+		var anyC  = Object.keys(cats).length > 0;
 		var shown = 0;
 
-		rows.forEach(function (r) {
-			var okName = !q || r.dataset.name.indexOf(q) !== -1;
-			var okCat  = !c || r.dataset.cat === c;
-			if (okName && okCat) {
-				r.style.display = '';
-				shown++;
-			} else {
-				r.style.display = 'none';
-			}
+		cards.forEach(function (c) {
+			var okName = !q || c.dataset.name.indexOf(q) !== -1;
+			var okGi   = !anyGi || gis[c.dataset.giTier];
+			var okGl   = !anyGl || gls[c.dataset.glTier];
+			var okCat  = !anyC  || cats[c.dataset.cat];
+			var show   = okName && okGi && okGl && okCat;
+			c.style.display = show ? '' : 'none';
+			if (show) shown++;
 		});
 
 		if ($stats) {
-			$stats.textContent = shown === totalCount
-				? totalCount + ' foods listed.'
-				: shown + ' of ' + totalCount + ' foods match.';
+			$stats.textContent = shown === total
+				? total + ' foods.'
+				: 'Showing ' + shown + ' of ' + total + ' foods.';
 		}
+		if ($empty) $empty.style.display = shown === 0 ? '' : 'none';
 	}
 
-	function sortBy(key) {
-		if (sortState.key === key) {
-			sortState.dir = sortState.dir === 'asc' ? 'desc' : 'asc';
-		} else {
-			sortState.key = key;
-			sortState.dir = (key === 'gi' || key === 'gl') ? 'desc' : 'asc';
-		}
-		var dir = sortState.dir === 'asc' ? 1 : -1;
+	function sort() {
+		var val = $sort ? $sort.value : 'name-asc';
+		var parts = val.split('-');
+		var key = parts[0]; // name | gi | gl
+		var dir = parts[1] === 'asc' ? 1 : -1;
 
-		rows.sort(function (a, b) {
+		cards.sort(function (a, b) {
 			var va, vb;
-			switch (key) {
-				case 'gi': va = parseFloat(a.dataset.gi); vb = parseFloat(b.dataset.gi); break;
-				case 'gl': va = parseFloat(a.dataset.gl); vb = parseFloat(b.dataset.gl); break;
-				case 'cat': va = a.dataset.cat; vb = b.dataset.cat; break;
-				case 'serving': va = parseFloat(a.dataset.servingG); vb = parseFloat(b.dataset.servingG); break;
-				default: va = a.dataset.name; vb = b.dataset.name;
-			}
+			if (key === 'gi') { va = parseFloat(a.dataset.gi); vb = parseFloat(b.dataset.gi); }
+			else if (key === 'gl') { va = parseFloat(a.dataset.gl); vb = parseFloat(b.dataset.gl); }
+			else { va = a.dataset.name; vb = b.dataset.name; }
 			if (va < vb) return -1 * dir;
 			if (va > vb) return  1 * dir;
 			return 0;
 		});
-
-		rows.forEach(function (r) { $body.appendChild(r); });
-
-		$ths.forEach(function (th) {
-			th.setAttribute('aria-sort',
-				th.dataset.sort === key
-					? (sortState.dir === 'asc' ? 'ascending' : 'descending')
-					: 'none'
-			);
-		});
+		cards.forEach(function (c) { $grid.appendChild(c); });
 	}
 
 	if ($search) $search.addEventListener('input', apply);
-	if ($cat)    $cat.addEventListener('change', apply);
-	$ths.forEach(function (th) {
-		th.addEventListener('click', function () { sortBy(th.dataset.sort); });
-		th.addEventListener('keydown', function (e) {
-			if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); sortBy(th.dataset.sort); }
+	if ($sort)   $sort.addEventListener('change', function () { sort(); apply(); });
+	$filters.forEach(function (f) { f.addEventListener('change', apply); });
+	if ($clear) {
+		$clear.addEventListener('click', function () {
+			$filters.forEach(function (f) { f.checked = false; });
+			if ($search) $search.value = '';
+			if ($sort)   $sort.value = 'name-asc';
+			sort();
+			apply();
 		});
-		th.setAttribute('tabindex', '0');
-	});
+	}
 })();

@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'GLYCEMICLIFE_VERSION', '1.0.0' );
+define( 'GLYCEMICLIFE_VERSION', '2.0.0' );
 define( 'GLYCEMICLIFE_DIR', get_template_directory() );
 define( 'GLYCEMICLIFE_URI', get_template_directory_uri() );
 define( 'GLYCEMICLIFE_APP_URL', 'https://nutriglinsight.com' );
@@ -46,13 +46,20 @@ function glycemiclife_setup() {
 add_action( 'after_setup_theme', 'glycemiclife_setup' );
 
 /**
- * Enqueue assets. One CSS file, deferred JS. That's it.
+ * Enqueue assets. Google Fonts (Inter), one CSS file, deferred JS.
  */
 function glycemiclife_enqueue_assets() {
+	// Inter — modern, free, high-legibility. Preconnect + display=swap for perf.
+	wp_enqueue_style(
+		'glycemiclife-fonts',
+		'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap',
+		array(),
+		null
+	);
 	wp_enqueue_style(
 		'glycemiclife-main',
 		GLYCEMICLIFE_URI . '/assets/css/main.css',
-		array(),
+		array( 'glycemiclife-fonts' ),
 		GLYCEMICLIFE_VERSION
 	);
 
@@ -68,6 +75,18 @@ function glycemiclife_enqueue_assets() {
 	);
 }
 add_action( 'wp_enqueue_scripts', 'glycemiclife_enqueue_assets' );
+
+/**
+ * Preconnect to Google Fonts hosts for faster first paint.
+ */
+function glycemiclife_resource_hints( $urls, $relation_type ) {
+	if ( 'preconnect' === $relation_type ) {
+		$urls[] = array( 'href' => 'https://fonts.googleapis.com', 'crossorigin' );
+		$urls[] = array( 'href' => 'https://fonts.gstatic.com',    'crossorigin' );
+	}
+	return $urls;
+}
+add_filter( 'wp_resource_hints', 'glycemiclife_resource_hints', 10, 2 );
 
 /**
  * Add defer/async fallback for older WP.
@@ -94,6 +113,39 @@ function glycemiclife_reading_time( $post_id = null ) {
 	$minutes = max( 1, (int) ceil( $words / 220 ) );
 	/* translators: %d: reading time in minutes. */
 	return sprintf( _n( '%d min read', '%d min read', $minutes, 'glycemiclife' ), $minutes );
+}
+
+/**
+ * Reusable post-card markup used across index, archive, and homepage.
+ */
+function glycemiclife_post_card() {
+	$cats      = get_the_category();
+	$has_thumb = has_post_thumbnail();
+	?>
+	<article <?php post_class( 'post-card' ); ?>>
+		<a class="post-card__thumb <?php echo $has_thumb ? '' : 'post-card__thumb--placeholder'; ?>" href="<?php the_permalink(); ?>" aria-hidden="true" tabindex="-1">
+			<?php if ( $has_thumb ) : ?>
+				<?php the_post_thumbnail( 'medium_large', array( 'loading' => 'lazy', 'alt' => esc_attr( get_the_title() ) ) ); ?>
+			<?php else : ?>
+				<span>🥗</span>
+			<?php endif; ?>
+		</a>
+		<div class="post-card__body">
+			<?php if ( $cats ) : ?>
+				<a class="post-card__chip" href="<?php echo esc_url( get_category_link( $cats[0]->term_id ) ); ?>"><?php echo esc_html( $cats[0]->name ); ?></a>
+			<?php endif; ?>
+			<h3 class="post-card__title">
+				<a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
+			</h3>
+			<p class="post-card__excerpt"><?php echo esc_html( wp_trim_words( get_the_excerpt(), 22, '…' ) ); ?></p>
+			<p class="post-card__meta">
+				<time datetime="<?php echo esc_attr( get_the_date( 'c' ) ); ?>"><?php echo esc_html( get_the_date() ); ?></time>
+				<span aria-hidden="true">·</span>
+				<span><?php echo esc_html( glycemiclife_reading_time() ); ?></span>
+			</p>
+		</div>
+	</article>
+	<?php
 }
 
 /**

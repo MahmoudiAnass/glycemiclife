@@ -1,4 +1,4 @@
-/* NutriGL Tools — Calculator (vanilla JS, ~1.5 KB min). */
+/* NutriGL Tools — Calculator (vanilla JS). */
 (function () {
 	'use strict';
 
@@ -15,9 +15,9 @@
 	if ( !$food || !$grams ) return;
 
 	function classify(gl) {
-		if (gl < 10)  return { cls: 'low',  label: 'Low GL', tip: 'Low glycemic load — great for stable blood sugar.' };
-		if (gl < 20)  return { cls: 'med',  label: 'Medium GL', tip: 'Medium glycemic load — fine in moderation, pair with protein or fiber.' };
-		return { cls: 'high', label: 'High GL', tip: 'High glycemic load — will spike your blood sugar. Reduce portion, add fiber, protein, or fat.' };
+		if (gl < 10)  return { cls: 'low',  label: 'Low GL', tip: 'Minimal blood-sugar impact — a solid choice.' };
+		if (gl < 20)  return { cls: 'med',  label: 'Medium GL', tip: 'Moderate impact — fine paired with protein or fiber.' };
+		return { cls: 'high', label: 'High GL', tip: 'This will spike your blood sugar. Reduce portion or add fiber, protein, or fat.' };
 	}
 
 	function calc() {
@@ -44,11 +44,10 @@
 
 		var c = classify(gl);
 		$outGL.className = 'gl-result__value gl-result__value--' + c.cls;
-		$hint.textContent = c.label + ' — ' + c.tip + ' Formula: GL = GI × carbs ÷ 100.';
+		$hint.textContent = c.label + ' — ' + c.tip + '  Formula: GL = GI × carbs ÷ 100.';
 	}
 
 	$food.addEventListener('change', calc);
 	$grams.addEventListener('input', calc);
-	// Reasonable default on first paint if a food is preselected.
 	calc();
 })();

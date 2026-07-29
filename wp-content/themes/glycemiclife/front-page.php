@@ -1,6 +1,6 @@
 <?php
 /**
- * Homepage (used when a static front page is set, or as fallback).
+ * Homepage.
  *
  * @package GlycemicLife
  */
@@ -8,78 +8,88 @@
 get_header(); ?>
 
 <section class="hero">
-	<div class="container hero__inner">
-		<p class="hero__eyebrow">Glycemic Load, made simple</p>
-		<h1 class="hero__title">Eat for stable blood sugar &mdash; without the guesswork.</h1>
-		<p class="hero__sub">Free tools and evidence-based guides that teach you the <em>real</em> impact of food on your blood glucose. No fluff. No fad diets. Just Glycemic Load.</p>
-		<div class="hero__cta">
-			<a class="btn btn--primary" href="<?php echo esc_url( home_url( '/calculator/' ) ); ?>">Open GL Calculator</a>
-			<a class="btn btn--ghost" href="<?php echo esc_url( home_url( '/gi-database/' ) ); ?>">Browse GI Database</a>
+	<div class="hero__inner">
+		<span class="hero__eyebrow">Glycemic Load, made simple</span>
+		<h1 class="hero__title">Master the number that <em>actually</em> controls your blood sugar.</h1>
+		<p class="hero__sub">Free tools and evidence-based guides on Glycemic Load — the metric that predicts how food affects your energy, cravings, and fat loss.</p>
+
+		<form class="hero-search" role="search" method="get" action="<?php echo esc_url( home_url( '/' ) ); ?>">
+			<svg class="hero-search__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+				<circle cx="11" cy="11" r="7"></circle>
+				<path d="m21 21-4.3-4.3"></path>
+			</svg>
+			<input class="hero-search__input" type="search" name="s" placeholder="Search for any food, article, or recipe…" aria-label="Search">
+			<button class="hero-search__btn" type="submit">Search</button>
+		</form>
+
+		<div class="hero-tags">
+			<a class="hero-tag" href="<?php echo esc_url( home_url( '/?s=banana' ) ); ?>">Banana</a>
+			<a class="hero-tag" href="<?php echo esc_url( home_url( '/?s=rice' ) ); ?>">Rice</a>
+			<a class="hero-tag" href="<?php echo esc_url( home_url( '/?s=oats' ) ); ?>">Oats</a>
+			<a class="hero-tag" href="<?php echo esc_url( home_url( '/?s=potato' ) ); ?>">Potato</a>
+			<a class="hero-tag" href="<?php echo esc_url( home_url( '/?s=yogurt' ) ); ?>">Yogurt</a>
+			<a class="hero-tag" href="<?php echo esc_url( home_url( '/?s=chocolate' ) ); ?>">Chocolate</a>
 		</div>
 	</div>
 </section>
 
-<section class="container features">
-	<div class="feature">
-		<h2 class="feature__title">Glycemic Load Calculator</h2>
-		<p>Pick a food, enter grams, get your GL — instantly. No sign-up.</p>
-		<a href="<?php echo esc_url( home_url( '/calculator/' ) ); ?>">Try the calculator →</a>
-	</div>
-	<div class="feature">
-		<h2 class="feature__title">GI &amp; GL Database</h2>
-		<p>Search 100+ everyday foods. Sortable, filterable, mobile-friendly.</p>
-		<a href="<?php echo esc_url( home_url( '/gi-database/' ) ); ?>">Search foods →</a>
-	</div>
-	<div class="feature">
-		<h2 class="feature__title">Deep-dive Guides</h2>
-		<p>GI vs. GL, fat loss myths, meal ideas, working professional habits.</p>
-		<a href="<?php echo esc_url( home_url( '/blog/' ) ); ?>">Read the blog →</a>
+<div class="container">
+	<section class="features-row">
+		<a class="feature-card" href="<?php echo esc_url( home_url( '/calculator/' ) ); ?>">
+			<div class="feature-card__icon feature-card__icon--green">🧮</div>
+			<h3 class="feature-card__title">GL Calculator</h3>
+			<p class="feature-card__body">Pick a food, enter grams, get an instant Glycemic Load score.</p>
+			<span class="feature-card__more">Open calculator →</span>
+		</a>
+		<a class="feature-card" href="<?php echo esc_url( home_url( '/gi-database/' ) ); ?>">
+			<div class="feature-card__icon feature-card__icon--blue">🥗</div>
+			<h3 class="feature-card__title">Food Database</h3>
+			<p class="feature-card__body">Search &amp; filter 100+ foods by GI, GL, and category.</p>
+			<span class="feature-card__more">Browse foods →</span>
+		</a>
+		<a class="feature-card" href="<?php echo esc_url( home_url( '/blog/' ) ); ?>">
+			<div class="feature-card__icon feature-card__icon--amber">📖</div>
+			<h3 class="feature-card__title">Deep-dive Guides</h3>
+			<p class="feature-card__body">Fat loss, meal templates, myths busted — all sourced.</p>
+			<span class="feature-card__more">Read articles →</span>
+		</a>
+	</section>
+</div>
+
+<section class="section">
+	<div class="container">
+		<div class="section__head">
+			<div>
+				<h2 class="section__title">Latest guides</h2>
+				<p class="section__sub">Practical, sourced articles you can act on today.</p>
+			</div>
+			<a class="section__link" href="<?php echo esc_url( home_url( '/blog/' ) ); ?>">View all →</a>
+		</div>
+
+		<div class="post-grid">
+			<?php
+			$latest = new WP_Query(
+				array(
+					'posts_per_page'      => 6,
+					'ignore_sticky_posts' => true,
+					'no_found_rows'       => true,
+				)
+			);
+			if ( $latest->have_posts() ) :
+				while ( $latest->have_posts() ) : $latest->the_post();
+					glycemiclife_post_card();
+				endwhile;
+				wp_reset_postdata();
+			else :
+				echo '<p>Articles coming soon.</p>';
+			endif;
+			?>
+		</div>
 	</div>
 </section>
 
-<section class="container latest">
-	<h2 class="section-title">Latest guides</h2>
-	<div class="post-grid">
-		<?php
-		$latest = new WP_Query(
-			array(
-				'posts_per_page'      => 6,
-				'ignore_sticky_posts' => true,
-				'no_found_rows'       => true,
-			)
-		);
-		if ( $latest->have_posts() ) :
-			while ( $latest->have_posts() ) :
-				$latest->the_post();
-				?>
-				<article <?php post_class( 'post-card' ); ?>>
-					<?php if ( has_post_thumbnail() ) : ?>
-						<a class="post-card__thumb" href="<?php the_permalink(); ?>" aria-hidden="true" tabindex="-1">
-							<?php the_post_thumbnail( 'medium_large', array( 'loading' => 'lazy' ) ); ?>
-						</a>
-					<?php endif; ?>
-					<div class="post-card__body">
-						<h3 class="post-card__title">
-							<a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
-						</h3>
-						<p class="post-card__meta">
-							<time datetime="<?php echo esc_attr( get_the_date( 'c' ) ); ?>"><?php echo esc_html( get_the_date() ); ?></time>
-							<span aria-hidden="true"> · </span>
-							<span><?php echo esc_html( glycemiclife_reading_time() ); ?></span>
-						</p>
-						<p class="post-card__excerpt"><?php echo esc_html( wp_trim_words( get_the_excerpt(), 24, '…' ) ); ?></p>
-					</div>
-				</article>
-				<?php
-			endwhile;
-			wp_reset_postdata();
-		else :
-			echo '<p>Articles coming soon.</p>';
-		endif;
-		?>
-	</div>
-</section>
-
-<?php echo glycemiclife_cta_html( array( 'variant' => 'banner' ) ); ?>
+<div class="container">
+	<?php echo glycemiclife_cta_html( array( 'variant' => 'banner' ) ); ?>
+</div>
 
 <?php get_footer(); ?>
