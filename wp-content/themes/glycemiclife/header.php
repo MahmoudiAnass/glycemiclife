@@ -8,13 +8,26 @@
 <!doctype html>
 <html <?php language_attributes(); ?>>
 <head>
-	<!-- Google tag (gtag.js) -->
-	<script async src="https://www.googletagmanager.com/gtag/js?id=G-BEYHP9JREJ"></script>
+	<!-- Google Consent Mode (default state) — must run before gtag.js loads -->
 	<script>
 	  window.dataLayer = window.dataLayer || [];
 	  function gtag(){dataLayer.push(arguments);}
+	  (function () {
+	    var granted = false;
+	    try { granted = localStorage.getItem('glycemiclife_consent') === 'accepted'; } catch (e) {}
+	    gtag('consent', 'default', {
+	      'ad_storage': granted ? 'granted' : 'denied',
+	      'ad_user_data': granted ? 'granted' : 'denied',
+	      'ad_personalization': granted ? 'granted' : 'denied',
+	      'analytics_storage': granted ? 'granted' : 'denied',
+	      'wait_for_update': 500
+	    });
+	  })();
+	</script>
+	<!-- Google tag (gtag.js) -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-BEYHP9JREJ"></script>
+	<script>
 	  gtag('js', new Date());
-
 	  gtag('config', 'G-BEYHP9JREJ');
 	</script>
 	<meta charset="<?php bloginfo( 'charset' ); ?>">

@@ -60,8 +60,21 @@
 	<div class="site-footer__bottom">
 		<span>&copy; <?php echo esc_html( gmdate( 'Y' ) ); ?> <?php bloginfo( 'name' ); ?>. All rights reserved.</span>
 		<span>Published by <a href="<?php echo esc_url( GLYCEMICLIFE_APP_URL ); ?>" rel="noopener" target="_blank">NutriGL Insight</a></span>
+		<span><a href="#" data-consent-reopen>Cookie Settings</a></span>
 	</div>
 </footer>
+
+<div id="glycemiclife-consent-banner" class="consent-banner" role="dialog" aria-live="polite" aria-label="Cookie consent" aria-hidden="true">
+	<div class="consent-banner__inner">
+		<p class="consent-banner__text">
+			We use cookies and similar technologies (including Google Analytics) to understand how you use GlycemicLife and to improve your experience. You can accept or reject non-essential cookies at any time. Read our <a href="<?php echo esc_url( home_url( '/privacy-policy/' ) ); ?>">Privacy Policy</a> to learn more.
+		</p>
+		<div class="consent-banner__actions">
+			<button type="button" class="consent-banner__reject" data-consent-reject>Reject</button>
+			<button type="button" class="consent-banner__accept" data-consent-accept>Accept All</button>
+		</div>
+	</div>
+</div>
 
 <?php wp_footer(); ?>
 </body>

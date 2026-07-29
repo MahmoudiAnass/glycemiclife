@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'GLYCEMICLIFE_VERSION', '2.3.2' );
+define( 'GLYCEMICLIFE_VERSION', '2.3.3' );
 define( 'GLYCEMICLIFE_DIR', get_template_directory() );
 define( 'GLYCEMICLIFE_URI', get_template_directory_uri() );
 define( 'GLYCEMICLIFE_APP_URL', 'https://play.google.com/store/apps/details?id=com.oushen.NutriGLInsight' );
@@ -75,10 +75,26 @@ function glycemiclife_enqueue_assets() {
 		array( 'glycemiclife-fonts' ),
 		GLYCEMICLIFE_VERSION
 	);
+	wp_enqueue_style(
+		'glycemiclife-consent',
+		GLYCEMICLIFE_URI . '/assets/css/consent.css',
+		array( 'glycemiclife-main' ),
+		GLYCEMICLIFE_VERSION
+	);
 
 	wp_enqueue_script(
 		'glycemiclife-main',
 		GLYCEMICLIFE_URI . '/assets/js/main.js',
+		array(),
+		GLYCEMICLIFE_VERSION,
+		array(
+			'strategy'  => 'defer',
+			'in_footer' => true,
+		)
+	);
+	wp_enqueue_script(
+		'glycemiclife-consent',
+		GLYCEMICLIFE_URI . '/assets/js/consent.js',
 		array(),
 		GLYCEMICLIFE_VERSION,
 		array(
@@ -105,7 +121,7 @@ add_filter( 'wp_resource_hints', 'glycemiclife_resource_hints', 10, 2 );
  * Add defer/async fallback for older WP.
  */
 function glycemiclife_defer_scripts( $tag, $handle ) {
-	if ( 'glycemiclife-main' === $handle && false === strpos( $tag, 'defer' ) ) {
+	if ( in_array( $handle, array( 'glycemiclife-main', 'glycemiclife-consent' ), true ) && false === strpos( $tag, 'defer' ) ) {
 		return str_replace( ' src', ' defer src', $tag );
 	}
 	return $tag;
