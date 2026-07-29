@@ -150,11 +150,19 @@ code, kbd, samp {
 }
 .header-cta:hover { background: #16a34a; transform: translateY(-1px); color:#052013 !important;}
 
+.header-actions {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
 @media (max-width: 860px) {
 	.site-header__inner { flex-wrap: wrap; gap: 12px; padding: 12px 16px; }
 	.primary-nav { order: 3; flex-basis: 100%; }
 	.primary-nav__list { justify-content: center; gap: 2px; }
 	.primary-nav__list a { padding: 8px 10px; font-size: .88rem; }
+	.header-actions { flex-basis: 100%; justify-content: center; }
 }
 
 /* Hero */

@@ -1,0 +1,257 @@
+/* NutriGL Tools — Auth widget + quota bar + modal. */
+
+/* -----------------------------------------------
+ * Account badge (header / anywhere)
+ * ----------------------------------------------- */
+.nutrigl-account {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+.nutrigl-badge__user {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 13px;
+	font-weight: 600;
+	color: #e6edf7;
+	background: rgba(255,255,255,0.08);
+	padding: 6px 10px;
+	border-radius: 999px;
+	max-width: 180px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.nutrigl-badge__dot {
+	width: 8px; height: 8px;
+	background: #22c55e;
+	border-radius: 50%;
+	box-shadow: 0 0 0 3px rgba(34,197,94,0.25);
+	flex: 0 0 auto;
+}
+.nutrigl-badge__btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-family: inherit;
+	font-size: 13px;
+	font-weight: 600;
+	line-height: 1;
+	padding: 8px 14px;
+	border-radius: 999px;
+	border: 0;
+	cursor: pointer;
+	background: #22c55e;
+	color: #06231a;
+	transition: transform .15s, background .15s;
+}
+.nutrigl-badge__btn:hover { background: #16a34a; transform: translateY(-1px); }
+.nutrigl-badge__btn--ghost {
+	background: transparent;
+	color: #e6edf7;
+	border: 1px solid rgba(255,255,255,0.28);
+}
+.nutrigl-badge__btn--ghost:hover { background: rgba(255,255,255,0.08); color: #fff; }
+
+/* On light backgrounds. */
+.nutrigl-account--light .nutrigl-badge__user {
+	color: #0b1e3a;
+	background: rgba(11,30,58,0.08);
+}
+.nutrigl-account--light .nutrigl-badge__btn--ghost {
+	color: #0b1e3a;
+	border-color: rgba(11,30,58,0.2);
+}
+.nutrigl-account--light .nutrigl-badge__btn--ghost:hover { background: rgba(11,30,58,0.06); }
+
+/* -----------------------------------------------
+ * Quota bar under the calculator
+ * ----------------------------------------------- */
+.gl-quota {
+	margin-top: 20px;
+	padding: 16px 18px;
+	background: #f6f8fb;
+	border: 1px solid #e5e9f0;
+	border-radius: 14px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+.gl-quota__bar {
+	height: 8px;
+	background: rgba(11,30,58,0.08);
+	border-radius: 999px;
+	overflow: hidden;
+}
+.gl-quota__fill {
+	display: block;
+	height: 100%;
+	width: 0;
+	background: linear-gradient(90deg, #22c55e, #16a34a);
+	transition: width .35s ease;
+	border-radius: 999px;
+}
+.gl-quota__fill.is-low   { background: linear-gradient(90deg, #f59e0b, #d97706); }
+.gl-quota__fill.is-empty { background: linear-gradient(90deg, #ef4444, #b91c1c); width: 100% !important; opacity: .35; }
+.gl-quota__text {
+	color: #334155;
+	font-size: 14px;
+}
+.gl-quota__text strong {
+	color: #0b1e3a;
+	font-size: 16px;
+}
+.gl-quota__cta {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+.gl-quota__note {
+	color: #ef4444;
+	font-weight: 600;
+	font-size: 14px;
+}
+
+/* -----------------------------------------------
+ * Calculator field / button additions
+ * ----------------------------------------------- */
+.gl-calc__grid {
+	display: grid;
+	grid-template-columns: 2fr 1fr auto;
+	gap: 14px;
+	align-items: end;
+}
+@media (max-width: 720px) {
+	.gl-calc__grid { grid-template-columns: 1fr; }
+}
+.gl-field--btn label { visibility: hidden; }
+.btn--sm {
+	font-size: 13px;
+	padding: 8px 14px;
+}
+.btn--block { width: 100%; }
+.btn:disabled { opacity: .5; cursor: not-allowed; transform: none !important; }
+
+/* -----------------------------------------------
+ * Modal
+ * ----------------------------------------------- */
+.nutrigl-modal {
+	position: fixed; inset: 0;
+	display: none;
+	align-items: center; justify-content: center;
+	z-index: 100000;
+	padding: 20px;
+}
+.nutrigl-modal[aria-hidden="false"] { display: flex; }
+.nutrigl-modal-open { overflow: hidden; }
+
+.nutrigl-modal__backdrop {
+	position: absolute; inset: 0;
+	background: rgba(11,30,58,0.68);
+	backdrop-filter: blur(6px);
+	animation: nutriglFade .18s ease;
+}
+.nutrigl-modal__panel {
+	position: relative;
+	width: 100%;
+	max-width: 420px;
+	background: #fff;
+	border-radius: 20px;
+	padding: 30px 28px 26px;
+	box-shadow: 0 30px 80px rgba(11,30,58,0.35);
+	animation: nutriglPop .22s ease;
+}
+@keyframes nutriglFade { from { opacity: 0 } to { opacity: 1 } }
+@keyframes nutriglPop  { from { opacity: 0; transform: translateY(12px) scale(.98) } to { opacity: 1; transform: none } }
+
+.nutrigl-modal__close {
+	position: absolute; top: 12px; right: 14px;
+	width: 34px; height: 34px;
+	border-radius: 50%;
+	background: transparent;
+	border: 0;
+	font-size: 24px;
+	line-height: 1;
+	color: #64748b;
+	cursor: pointer;
+}
+.nutrigl-modal__close:hover { background: rgba(11,30,58,0.06); color: #0b1e3a; }
+
+.nutrigl-tabs {
+	display: inline-flex;
+	background: #f1f5f9;
+	border-radius: 999px;
+	padding: 4px;
+	margin-bottom: 22px;
+}
+.nutrigl-tab {
+	font-family: inherit;
+	font-size: 13px;
+	font-weight: 600;
+	color: #64748b;
+	background: transparent;
+	border: 0;
+	cursor: pointer;
+	padding: 8px 16px;
+	border-radius: 999px;
+	transition: background .15s, color .15s;
+}
+.nutrigl-tab.is-active {
+	background: #fff;
+	color: #0b1e3a;
+	box-shadow: 0 2px 8px rgba(11,30,58,0.08);
+}
+
+.nutrigl-modal__title {
+	margin: 0 0 6px;
+	font-size: 22px;
+	font-weight: 800;
+	color: #0b1e3a;
+}
+.nutrigl-modal__sub {
+	margin: 0 0 22px;
+	font-size: 14px;
+	color: #64748b;
+}
+
+.nutrigl-form label {
+	display: block;
+	font-size: 13px;
+	font-weight: 600;
+	color: #0b1e3a;
+	margin-bottom: 12px;
+}
+.nutrigl-form input {
+	display: block;
+	width: 100%;
+	font-family: inherit;
+	font-size: 15px;
+	color: #0b1e3a;
+	background: #f8fafc;
+	border: 1.5px solid #e2e8f0;
+	border-radius: 10px;
+	padding: 12px 14px;
+	margin-top: 6px;
+	transition: border-color .15s, background .15s;
+	box-sizing: border-box;
+}
+.nutrigl-form input:focus {
+	outline: none;
+	border-color: #22c55e;
+	background: #fff;
+	box-shadow: 0 0 0 3px rgba(34,197,94,0.15);
+}
+.nutrigl-form__msg {
+	min-height: 18px;
+	margin: 6px 0 12px;
+	font-size: 13px;
+	color: #64748b;
+}
+.nutrigl-form__msg.is-err { color: #b91c1c; font-weight: 600; }
+
+.nutrigl-form .btn {
+	margin-top: 4px;
+}

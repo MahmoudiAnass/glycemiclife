@@ -42,9 +42,12 @@
 			?>
 		</nav>
 
-		<a class="header-cta" href="<?php echo esc_url( GLYCEMICLIFE_APP_URL . '?utm_source=glycemiclife&utm_medium=header&utm_campaign=gl_funnel' ); ?>" rel="noopener" target="_blank">
-			Get the App
-		</a>
+		<div class="header-actions">
+			<?php echo do_shortcode( '[nutrigl_account]' ); ?>
+			<a class="header-cta" href="<?php echo esc_url( GLYCEMICLIFE_APP_URL . '?utm_source=glycemiclife&utm_medium=header&utm_campaign=gl_funnel' ); ?>" rel="noopener" target="_blank">
+				Get the App
+			</a>
+		</div>
 	</div>
 </header>
 

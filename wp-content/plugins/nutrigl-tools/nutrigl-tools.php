@@ -2,8 +2,8 @@
 /**
  * Plugin Name: NutriGL Tools
  * Plugin URI:  https://nutriglinsight.com
- * Description: Interactive Glycemic Load calculator and searchable GI/GL food database as shortcodes.
- * Version:     1.1.0
+ * Description: Interactive Glycemic Load calculator + food database + custom visitor auth with strict 1-free / 3-with-signup daily quota.
+ * Version:     2.0.0
  * Author:      NutriGL Insight
  * Author URI:  https://nutriglinsight.com
  * License:     GPL v2 or later
@@ -18,10 +18,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'NUTRIGL_TOOLS_VERSION', '1.1.0' );
+define( 'NUTRIGL_TOOLS_VERSION', '2.0.0' );
 define( 'NUTRIGL_TOOLS_FILE', __FILE__ );
 define( 'NUTRIGL_TOOLS_DIR', plugin_dir_path( __FILE__ ) );
 define( 'NUTRIGL_TOOLS_URL', plugin_dir_url( __FILE__ ) );
+
+require_once NUTRIGL_TOOLS_DIR . 'includes/auth.php';
+require_once NUTRIGL_TOOLS_DIR . 'includes/quota.php';
+require_once NUTRIGL_TOOLS_DIR . 'includes/rest.php';
+
+register_activation_hook( __FILE__, 'nutrigl_tools_install_tables' );
 
 /**
  * Load foods once (cached per request).
@@ -105,9 +111,43 @@ function nutrigl_tools_food_emoji( $name, $cat = '' ) {
 }
 
 /**
- * Enqueue tool assets only when a page uses a tool shortcode.
+ * Enqueue auth CSS + JS on every frontend page (so the modal + account
+ * badge work anywhere). Tool assets (calculator/database) load only when
+ * their shortcode is present.
  */
-function nutrigl_tools_maybe_enqueue() {
+function nutrigl_tools_enqueue_assets() {
+	if ( is_admin() ) {
+		return;
+	}
+
+	// Global auth CSS + JS.
+	wp_enqueue_style(
+		'nutrigl-tools-auth',
+		NUTRIGL_TOOLS_URL . 'assets/css/nutrigl-auth.css',
+		array(),
+		NUTRIGL_TOOLS_VERSION
+	);
+	wp_enqueue_script(
+		'nutrigl-tools-auth',
+		NUTRIGL_TOOLS_URL . 'assets/js/nutrigl-auth.js',
+		array(),
+		NUTRIGL_TOOLS_VERSION,
+		array(
+			'strategy'  => 'defer',
+			'in_footer' => true,
+		)
+	);
+	wp_add_inline_script(
+		'nutrigl-tools-auth',
+		'window.NUTRIGL_CFG = ' . wp_json_encode(
+			array(
+				'rest' => esc_url_raw( rest_url( 'nutrigl/v1/' ) ),
+			)
+		) . ';',
+		'before'
+	);
+
+	// Per-shortcode assets.
 	if ( ! is_singular() ) {
 		return;
 	}
@@ -134,7 +174,7 @@ function nutrigl_tools_maybe_enqueue() {
 		wp_enqueue_script(
 			'nutrigl-tools-calculator',
 			NUTRIGL_TOOLS_URL . 'assets/js/calculator.js',
-			array( 'nutrigl-tools-data' ),
+			array( 'nutrigl-tools-auth', 'nutrigl-tools-data' ),
 			NUTRIGL_TOOLS_VERSION,
 			array( 'strategy' => 'defer', 'in_footer' => true )
 		);
@@ -149,7 +189,67 @@ function nutrigl_tools_maybe_enqueue() {
 		);
 	}
 }
-add_action( 'wp_enqueue_scripts', 'nutrigl_tools_maybe_enqueue' );
+add_action( 'wp_enqueue_scripts', 'nutrigl_tools_enqueue_assets' );
+
+/**
+ * Output the shared auth modal + account container once at the end of
+ * every frontend page.
+ */
+function nutrigl_tools_render_modal() {
+	if ( is_admin() ) {
+		return;
+	}
+	?>
+	<div class="nutrigl-modal" id="nutrigl-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="nutrigl-modal-title">
+		<div class="nutrigl-modal__backdrop" data-close></div>
+		<div class="nutrigl-modal__panel">
+			<button type="button" class="nutrigl-modal__close" data-close aria-label="Close">&times;</button>
+			<div class="nutrigl-tabs" role="tablist">
+				<button type="button" class="nutrigl-tab is-active" data-tab="signup" role="tab">Sign up</button>
+				<button type="button" class="nutrigl-tab" data-tab="login" role="tab">Log in</button>
+			</div>
+			<h3 id="nutrigl-modal-title" class="nutrigl-modal__title">Get 2 more free checks</h3>
+			<p class="nutrigl-modal__sub">1 free daily calculation &middot; sign up and get 3. No spam, ever.</p>
+
+			<form class="nutrigl-form" data-form="signup" novalidate>
+				<label>Email
+					<input type="email" name="email" required autocomplete="email" placeholder="you@example.com" />
+				</label>
+				<label>Password
+					<input type="password" name="password" required minlength="8" autocomplete="new-password" placeholder="at least 8 characters" />
+				</label>
+				<p class="nutrigl-form__msg" role="alert"></p>
+				<button type="submit" class="btn btn--primary btn--block">Create free account</button>
+			</form>
+
+			<form class="nutrigl-form" data-form="login" style="display:none;" novalidate>
+				<label>Email
+					<input type="email" name="email" required autocomplete="email" />
+				</label>
+				<label>Password
+					<input type="password" name="password" required autocomplete="current-password" />
+				</label>
+				<p class="nutrigl-form__msg" role="alert"></p>
+				<button type="submit" class="btn btn--primary btn--block">Log in</button>
+			</form>
+		</div>
+	</div>
+	<?php
+}
+add_action( 'wp_footer', 'nutrigl_tools_render_modal', 20 );
+
+/**
+ * Shortcode: [nutrigl_account] — renders login/signup badge.
+ *
+ * @param array $atts Shortcode attributes.
+ * @return string
+ */
+function nutrigl_tools_account_shortcode( $atts ) {
+	$atts  = shortcode_atts( array( 'theme' => 'dark' ), $atts, 'nutrigl_account' );
+	$class = 'nutrigl-account' . ( 'light' === $atts['theme'] ? ' nutrigl-account--light' : '' );
+	return '<span id="nutrigl-account" class="' . esc_attr( $class ) . '"></span>';
+}
+add_shortcode( 'nutrigl_account', 'nutrigl_tools_account_shortcode' );
 
 /**
  * GL classification helpers.
@@ -167,18 +267,31 @@ function nutrigl_tools_gl_tier( $gl ) {
 
 /**
  * Shortcode: [gl_calculator]
+ *
+ * Now calls our WP proxy (which forwards to the Heroku API with our web key)
+ * and enforces a strict 1-free / 3-with-signup daily quota per user + per
+ * (IP + browser fingerprint) pool.
  */
 function nutrigl_tools_calculator_shortcode( $atts ) {
 	$atts = shortcode_atts(
 		array(
 			'title'    => 'Glycemic Load Calculator',
-			'subtitle' => 'Pick a food, enter grams, get an instant Glycemic Load score.',
+			'subtitle' => 'Type any food, set the portion, and see its blood-sugar impact instantly.',
 		),
 		$atts,
 		'gl_calculator'
 	);
 
 	$foods = nutrigl_tools_get_foods();
+
+	// Build a de-duplicated list of food names for the datalist autocomplete.
+	$names = array();
+	foreach ( $foods as $f ) {
+		if ( ! empty( $f['name'] ) ) {
+			$names[ strtolower( $f['name'] ) ] = $f['name'];
+		}
+	}
+	ksort( $names );
 
 	ob_start();
 	?>
@@ -189,47 +302,45 @@ function nutrigl_tools_calculator_shortcode( $atts ) {
 		<div class="gl-calc__grid">
 			<div class="gl-field">
 				<label for="glc-food">Food</label>
-				<select id="glc-food" class="gl-select">
-					<option value="">— Choose a food —</option>
-					<?php
-					$grouped = array();
-					foreach ( $foods as $idx => $f ) {
-						$cat = isset( $f['category'] ) ? $f['category'] : 'Other';
-						$grouped[ $cat ][] = array( 'idx' => $idx, 'food' => $f );
-					}
-					ksort( $grouped );
-					foreach ( $grouped as $cat => $items ) {
-						echo '<optgroup label="' . esc_attr( $cat ) . '">';
-						foreach ( $items as $i ) {
-							$f = $i['food'];
-							echo '<option value="' . (int) $i['idx'] . '">' . esc_html( $f['name'] ) . '</option>';
-						}
-						echo '</optgroup>';
-					}
-					?>
-				</select>
+				<input id="glc-food" class="gl-input" type="text" list="glc-food-list" placeholder="e.g. banana, brown rice, watermelon" maxlength="60" autocomplete="off" spellcheck="false">
+				<datalist id="glc-food-list">
+					<?php foreach ( $names as $name ) : ?>
+						<option value="<?php echo esc_attr( $name ); ?>"></option>
+					<?php endforeach; ?>
+				</datalist>
 			</div>
 
 			<div class="gl-field">
 				<label for="glc-grams">Serving (grams)</label>
 				<input id="glc-grams" class="gl-input" type="number" min="1" max="2000" step="1" value="100" inputmode="numeric">
 			</div>
+
+			<div class="gl-field gl-field--btn">
+				<label for="glc-run">&nbsp;</label>
+				<button type="button" id="glc-run" class="btn btn--primary btn--block">Calculate</button>
+			</div>
 		</div>
 
 		<div class="gl-result" role="status" aria-live="polite">
 			<div class="gl-result__cell">
 				<span class="gl-result__label">Glycemic Index</span>
-				<span id="glc-out-gi" class="gl-result__value">—</span>
+				<span id="glc-out-gi" class="gl-result__value">&mdash;</span>
 			</div>
 			<div class="gl-result__cell">
-				<span class="gl-result__label">Net Carbs</span>
-				<span id="glc-out-carbs" class="gl-result__value">—</span>
+				<span class="gl-result__label">Carbs (serving)</span>
+				<span id="glc-out-carbs" class="gl-result__value">&mdash;</span>
 			</div>
 			<div class="gl-result__cell">
 				<span class="gl-result__label">Glycemic Load</span>
-				<span id="glc-out-gl" class="gl-result__value">—</span>
+				<span id="glc-out-gl" class="gl-result__value">&mdash;</span>
 			</div>
-			<p id="glc-hint" class="gl-result__hint">Select a food and enter a serving size to see the result.</p>
+			<p id="glc-hint" class="gl-result__hint">Type a food and grams, then hit Calculate.</p>
+		</div>
+
+		<div class="gl-quota" id="glc-quota">
+			<div class="gl-quota__bar"><span id="glc-quota-fill" class="gl-quota__fill"></span></div>
+			<div id="glc-quota-text" class="gl-quota__text">Checking your daily allowance&hellip;</div>
+			<div id="glc-quota-cta" class="gl-quota__cta"></div>
 		</div>
 	</section>
 	<?php
