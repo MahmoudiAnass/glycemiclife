@@ -12,7 +12,28 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 define( 'NUTRIGL_API_URL', 'https://nutriglinsight-api-24d456c86e48.herokuapp.com/api/glycemic-check' );
-define( 'NUTRIGL_API_KEY', 'jmJ5hO0TuBPnpvVkfxsCNyZR83F7te2rz1QEgH6K' );
+
+/**
+ * Resolve the upstream API key from (in order):
+ *   1. Environment variable NUTRIGL_API_KEY (e.g. cPanel Env vars)
+ *   2. Constant NUTRIGL_API_KEY defined in wp-config.php
+ *   3. WP option 'nutrigl_tools_api_key' (settable via Settings → NutriGL)
+ *
+ * Returns empty string if none is configured.
+ *
+ * @return string
+ */
+function nutrigl_tools_api_key() {
+	$env = getenv( 'NUTRIGL_API_KEY' );
+	if ( is_string( $env ) && '' !== $env ) {
+		return trim( $env );
+	}
+	if ( defined( 'NUTRIGL_API_KEY' ) && NUTRIGL_API_KEY ) {
+		return (string) NUTRIGL_API_KEY;
+	}
+	$opt = get_option( 'nutrigl_tools_api_key', '' );
+	return is_string( $opt ) ? trim( $opt ) : '';
+}
 
 /**
  * Register routes.
@@ -214,13 +235,23 @@ function nutrigl_tools_rest_gl_check( WP_REST_Request $req ) {
 		return nutrigl_tools_json_err( 'Slow down a moment and try again.', 'rate_burst', 429, array( 'quota' => $quota ) );
 	}
 
+	$api_key = nutrigl_tools_api_key();
+	if ( '' === $api_key ) {
+		return nutrigl_tools_json_err(
+			'Calculator is not configured yet. Please try again later.',
+			'server_misconfigured',
+			503,
+			array( 'quota' => $quota )
+		);
+	}
+
 	$resp = wp_remote_post(
 		NUTRIGL_API_URL,
 		array(
 			'timeout' => 12,
 			'headers' => array(
 				'Content-Type' => 'application/json',
-				'X-Web-Key'    => NUTRIGL_API_KEY,
+				'X-Web-Key'    => $api_key,
 			),
 			'body'    => wp_json_encode(
 				array(
