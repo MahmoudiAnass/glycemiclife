@@ -50,35 +50,41 @@
 			<?php endif; ?>
 		</div>
 
-		<nav class="primary-nav" aria-label="Primary">
-			<?php
-			wp_nav_menu(
-				array(
-					'theme_location' => 'primary',
-					'container'      => false,
-					'menu_class'     => 'primary-nav__list',
-					'fallback_cb'    => 'glycemiclife_default_menu',
-					'depth'          => 1,
-				)
-			);
-			?>
-		</nav>
+		<button type="button" class="nav-toggle" aria-expanded="false" aria-controls="site-header-panel" aria-label="Toggle navigation">
+			<span class="nav-toggle__bar"></span>
+		</button>
 
-		<div class="header-actions">
-			<?php echo do_shortcode( '[nutrigl_account]' ); ?>
-			<?php
-			$header_app_url = add_query_arg(
-				array(
-					'utm_source'   => 'glycemiclife',
-					'utm_medium'   => 'header',
-					'utm_campaign' => 'gl_funnel',
-				),
-				GLYCEMICLIFE_APP_URL
-			);
-			?>
-			<a class="header-cta" href="<?php echo esc_url( $header_app_url ); ?>" rel="noopener" target="_blank">
-				Get the App
-			</a>
+		<div class="site-header__panel" id="site-header-panel">
+			<nav class="primary-nav" aria-label="Primary">
+				<?php
+				wp_nav_menu(
+					array(
+						'theme_location' => 'primary',
+						'container'      => false,
+						'menu_class'     => 'primary-nav__list',
+						'fallback_cb'    => 'glycemiclife_default_menu',
+						'depth'          => 1,
+					)
+				);
+				?>
+			</nav>
+
+			<div class="header-actions">
+				<?php echo do_shortcode( '[nutrigl_account]' ); ?>
+				<?php
+				$header_app_url = add_query_arg(
+					array(
+						'utm_source'   => 'glycemiclife',
+						'utm_medium'   => 'header',
+						'utm_campaign' => 'gl_funnel',
+					),
+					GLYCEMICLIFE_APP_URL
+				);
+				?>
+				<a class="header-cta" href="<?php echo esc_url( $header_app_url ); ?>" rel="noopener" target="_blank">
+					Get the App
+				</a>
+			</div>
 		</div>
 	</div>
 </header>
