@@ -656,7 +656,12 @@ code, kbd, samp {
 
 
 /* Single article */
-.single-post { padding: 40px 24px 60px; max-width: var(--content); margin: 0 auto; }
+/* Tag-qualified: WordPress body_class() also outputs a bare "single-post" class
+   on <body> for single-post templates, so an unqualified ".single-post" rule
+   here would ALSO match <body> and clamp the whole page (header/footer
+   included) to var(--content) width. Scoping to the <article> element avoids
+   that collision. */
+article.single-post { padding: 40px 24px 60px; max-width: var(--content); margin: 0 auto; }
 .single-post__cat {
 	display: inline-block; background: var(--brand-100); color: var(--brand-700);
 	padding: 4px 12px; border-radius: 999px; font-size: .74rem; font-weight: 700;
