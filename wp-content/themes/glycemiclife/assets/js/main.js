@@ -37,7 +37,7 @@
 
 	// Collapse back to the desktop layout if the viewport is resized past the breakpoint.
 	window.addEventListener( 'resize', function () {
-		if ( window.innerWidth > 780 ) {
+		if ( window.innerWidth > 1240 ) {
 			closeNav();
 		}
 	} );
