@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'GLYCEMICLIFE_VERSION', '2.3.7' );
+define( 'GLYCEMICLIFE_VERSION', '2.3.8' );
 define( 'GLYCEMICLIFE_DIR', get_template_directory() );
 define( 'GLYCEMICLIFE_URI', get_template_directory_uri() );
 define( 'GLYCEMICLIFE_APP_URL', 'https://play.google.com/store/apps/details?id=com.oushen.NutriGLInsight' );
@@ -69,10 +69,17 @@ function glycemiclife_enqueue_assets() {
 		array(),
 		null
 	);
+	// Font Awesome Free — brand + solid icons used in CTA buttons (Google Play, arrows, etc).
+	wp_enqueue_style(
+		'font-awesome',
+		'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css',
+		array(),
+		'6.5.2'
+	);
 	wp_enqueue_style(
 		'glycemiclife-main',
 		GLYCEMICLIFE_URI . '/assets/css/main.css',
-		array( 'glycemiclife-fonts' ),
+		array( 'glycemiclife-fonts', 'font-awesome' ),
 		GLYCEMICLIFE_VERSION
 	);
 	wp_enqueue_style(

@@ -26,7 +26,9 @@
 			);
 			?>
 			<a class="btn btn--accent" href="<?php echo esc_url( $footer_app_url ); ?>" rel="noopener" target="_blank">
-				Download NutriGL Insight →
+				<i class="fa-brands fa-google-play" aria-hidden="true"></i>
+				<span>Download NutriGL Insight</span>
+				<i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
 			</a>
 		</div>
 

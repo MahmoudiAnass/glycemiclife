@@ -21,7 +21,7 @@ function glycemiclife_cta_html( $atts = array() ) {
 			'variant' => 'inline',
 			'title'   => 'Stop calculating Glycemic Load by hand.',
 			'body'    => 'Download <strong>NutriGL Insight</strong> to track your daily GL, macros, and meals — automatically.',
-			'button'  => 'Get NutriGL Insight →',
+			'button'  => 'Get NutriGL Insight',
 			'utm'     => 'glycemiclife',
 		),
 		$atts,
@@ -45,12 +45,17 @@ function glycemiclife_cta_html( $atts = array() ) {
 	?>
 	<aside class="gl-cta gl-cta--<?php echo esc_attr( $variant ); ?>" role="complementary" aria-label="NutriGL Insight app">
 		<div class="gl-cta__inner">
+			<div class="gl-cta__icon">
+				<img src="<?php echo esc_url( GLYCEMICLIFE_URI . '/assets/images/logo.png' ); ?>" alt="" width="56" height="56" loading="lazy">
+			</div>
 			<div class="gl-cta__copy">
 				<p class="gl-cta__title"><?php echo $title; ?></p>
 				<p class="gl-cta__body"><?php echo $body; ?></p>
 			</div>
 			<a class="gl-cta__btn" href="<?php echo esc_url( $app_url ); ?>" rel="noopener" target="_blank">
-				<?php echo $button; ?>
+				<i class="fa-brands fa-google-play gl-cta__btn-icon" aria-hidden="true"></i>
+				<span><?php echo $button; ?></span>
+				<i class="fa-solid fa-arrow-right gl-cta__btn-arrow" aria-hidden="true"></i>
 			</a>
 		</div>
 	</aside>
